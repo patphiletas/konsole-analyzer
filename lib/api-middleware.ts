@@ -1,0 +1,52 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { AppError, ErrorType, handleError } from './errors'
+import { ZodError } from 'zod'
+
+export interface ApiResponse<T> {
+  success: boolean
+  data?: T
+  error?: {
+    type: ErrorType | 'VALIDATION'
+    message: string
+  }
+  timestamp: string
+}
+
+export function createSuccessResponse<T>(data: T): ApiResponse<T> {
+  return {
+    success: true,
+    data,
+    timestamp: new Date().toISOString(),
+  }
+}
+
+export function createErrorResponse(error: unknown): ApiResponse<null> {
+  const appError = handleError(error)
+
+  if (error instanceof ZodError) {
+    return {
+      success: false,
+      error: {
+        type: 'VALIDATION',
+        message: error.errors[0].message,
+      },
+      timestamp: new Date().toISOString(),
+    }
+  }
+
+  return {
+    success: false,
+    error: {
+      type: appError.type,
+      message: appError.message,
+    },
+    timestamp: new Date().toISOString(),
+  }
+}
+
+export function toJsonResponse<T>(
+  response: ApiResponse<T>,
+  statusCode: number = 200,
+): NextResponse {
+  return NextResponse.json(response, { status: statusCode })
+}
