@@ -122,7 +122,7 @@ export function calculateFitScore(input: ScoringInput): ScoreBreakdown {
 function scoreLevel(score: number): string {
   if (score >= 75) return 'excellent fit'
   if (score >= 55) return 'bon fit'
-  if (score >= 35) return 'compte a qualifier'
+  if (score >= 35) return 'compte à qualifier'
   return 'fit faible'
 }
 
@@ -146,12 +146,12 @@ export function generateExplanation(
   if (input) {
     const details = [
       input.industry !== 'Unknown'
-        ? `secteur detecte: ${input.industry}`
+        ? `secteur détecté: ${input.industry}`
         : 'secteur peu explicite',
       input.estimatedSize !== 'Unknown'
-        ? `taille estimee: ${input.estimatedSize}`
-        : 'taille difficile a estimer',
-      `stack observee: ${formatList(input.techStack, 'aucune stack forte')}`,
+        ? `taille estimée: ${input.estimatedSize}`
+        : 'taille difficile à estimer',
+      `stack observée: ${formatList(input.techStack, 'aucune stack forte')}`,
       `signaux GTM: ${formatList(input.gtmSignals, 'peu de signaux visibles')}`,
     ]
 
@@ -159,10 +159,10 @@ export function generateExplanation(
   }
 
   if (breakdown.sizeScore >= 25) {
-    reasons.push('taille interessante')
+    reasons.push('taille intéressante')
   }
   if (breakdown.industryScore >= 30) {
-    reasons.push('secteur tres proche SaaS/tech')
+    reasons.push('secteur très proche SaaS/tech')
   }
   if (breakdown.techStackScore >= 20) {
     reasons.push('stack moderne')

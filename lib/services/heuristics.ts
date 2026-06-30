@@ -60,7 +60,7 @@ const GTM_PATTERNS: Array<[string, RegExp]> = [
   ['API / Webhooks', /api|webhook|sdk|developers/i],
   ['Blog / Resources', /blog|resources|guides|learn|academy/i],
   ['Case studies', /case.?stud|customers|success.?stor/i],
-  ['Integrations', /integration|marketplace|apps/i],
+  ['Intégrations', /integration|marketplace|apps/i],
   ['Newsletter capture', /newsletter|subscribe/i],
 ]
 

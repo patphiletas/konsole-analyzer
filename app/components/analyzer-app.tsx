@@ -38,7 +38,7 @@ const examples = ['stripe.com', 'hubspot.com', 'linear.app']
 function scoreLabel(score: number): string {
   if (score >= 75) return 'Excellent fit'
   if (score >= 55) return 'Bon fit'
-  if (score >= 35) return 'A qualifier'
+  if (score >= 35) return 'À qualifier'
   return 'Fit faible'
 }
 
@@ -123,7 +123,7 @@ export default function Home() {
               Kpratik
             </h1>
             <p className="mt-4 max-w-2xl text-lg leading-8 text-zinc-600">
-              Analyse un site web, extrait les signaux utiles pour une equipe
+              Analyse un site web, extrait les signaux utiles pour une équipe
               sales/marketing, puis score le fit pour une offre vendue aux SaaS
               B2B.
             </p>
@@ -137,7 +137,7 @@ export default function Home() {
               htmlFor="url"
               className="text-sm font-medium text-zinc-800"
             >
-              Site a analyser
+              Site à analyser
             </label>
             <div className="mt-2 flex flex-col gap-2 sm:flex-row lg:flex-col">
               <input
@@ -194,7 +194,7 @@ export default function Home() {
             {[
               ['1', 'Scraping', 'Title, metas, scripts et liens publics.'],
               ['2', 'Classification', 'Secteur, taille, stack et signaux GTM.'],
-              ['3', 'Scoring', 'Score SaaS B2B explique et actionnable.'],
+              ['3', 'Scoring', 'Score SaaS B2B expliqué et actionnable.'],
             ].map(([step, title, copy]) => (
               <div
                 key={step}
@@ -241,7 +241,7 @@ export default function Home() {
                     </p>
                   </div>
                   <div className="rounded-md bg-zinc-50 p-4">
-                    <p className="text-sm text-zinc-500">Taille estimee</p>
+                    <p className="text-sm text-zinc-500">Taille estimée</p>
                     <p className="mt-1 font-medium text-zinc-950">
                       {result.estimatedSize}
                     </p>
@@ -251,7 +251,7 @@ export default function Home() {
 
               <div className="rounded-lg border border-zinc-200 bg-white p-5">
                 <h3 className="text-lg font-semibold text-zinc-950">
-                  Signaux GTM detectes
+                  Signaux GTM détectés
                 </h3>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {result.gtmSignals.length > 0 ? (
@@ -265,7 +265,7 @@ export default function Home() {
                     ))
                   ) : (
                     <p className="text-sm text-zinc-500">
-                      Aucun signal fort detecte sur la page analysee.
+                      Aucun signal fort détecté sur la page analysée.
                     </p>
                   )}
                 </div>
@@ -274,7 +274,7 @@ export default function Home() {
               {(result.dnsTools.length > 0 || result.emailProvider !== 'Unknown') && (
                 <div className="rounded-lg border border-zinc-200 bg-white p-5">
                   <h3 className="text-lg font-semibold text-zinc-950">
-                    Outils detectes via DNS
+                    Outils détectés via DNS
                   </h3>
                   {result.emailProvider !== 'Unknown' && (
                     <div className="mt-3 flex items-center gap-2 text-sm text-zinc-600">
@@ -300,12 +300,12 @@ export default function Home() {
               <div className="rounded-lg border border-zinc-200 bg-white p-5">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-zinc-950">
-                    Stack technique estimee
+                    Stack technique estimée
                   </h3>
                   <div className="flex items-center gap-3 text-xs text-zinc-500">
                     <span className="flex items-center gap-1">
                       <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
-                      Confirme
+                      Confirmé
                     </span>
                     <span className="flex items-center gap-1">
                       <span className="inline-block h-2 w-2 rounded-full bg-amber-400" />
@@ -325,10 +325,10 @@ export default function Home() {
                         className="flex items-center gap-1.5 rounded-full bg-zinc-100 px-3 py-1 text-sm font-medium text-zinc-800"
                         title={
                           tech.confidence === 'high'
-                            ? 'Detecte dans les scripts charges'
+                            ? 'Détecté dans les scripts chargés'
                             : tech.confidence === 'medium'
-                              ? 'Detecte dans le HTML'
-                              : 'Mentionne dans le contenu'
+                              ? 'Détecté dans le HTML'
+                              : 'Mentionné dans le contenu'
                         }
                       >
                         <span

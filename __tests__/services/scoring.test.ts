@@ -88,8 +88,8 @@ describe('Scoring', () => {
     const explanation = generateExplanation(breakdown, input)
 
     expect(explanation).toContain(`Score ${breakdown.fitScore}/100`)
-    expect(explanation).toContain('secteur detecte: SaaS / Software')
-    expect(explanation).toContain('stack observee: Next.js, Stripe')
+    expect(explanation).toContain('secteur détecté: SaaS / Software')
+    expect(explanation).toContain('stack observée: Next.js, Stripe')
     expect(explanation).toContain('signaux GTM: Pricing page, Demo booking')
   })
 
