@@ -21,10 +21,8 @@ export function createSuccessResponse<T>(data: T): ApiResponse<T> {
 }
 
 export function createErrorResponse(error: unknown): ApiResponse<null> {
-  const appError = handleError(error)
-
   if (error instanceof ZodError) {
-    const firstError = (error as any).errors?.[0]
+    const firstError = error.issues[0]
     return {
       success: false,
       error: {
@@ -34,6 +32,8 @@ export function createErrorResponse(error: unknown): ApiResponse<null> {
       timestamp: new Date().toISOString(),
     }
   }
+
+  const appError = handleError(error)
 
   return {
     success: false,

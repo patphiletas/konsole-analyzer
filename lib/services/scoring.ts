@@ -5,7 +5,7 @@ export interface ScoringInput {
   gtmSignals: string[]
 }
 
-interface ScoreBreakdown {
+export interface ScoreBreakdown {
   fitScore: number
   sizeScore: number
   industryScore: number
@@ -119,24 +119,56 @@ export function calculateFitScore(input: ScoringInput): ScoreBreakdown {
   }
 }
 
-export function generateExplanation(breakdown: ScoreBreakdown): string {
-  const reasons = []
+function scoreLevel(score: number): string {
+  if (score >= 75) return 'excellent fit'
+  if (score >= 55) return 'bon fit'
+  if (score >= 35) return 'compte a qualifier'
+  return 'fit faible'
+}
+
+function formatList(values: string[], fallback: string): string {
+  if (!values.length) return fallback
+  return values.slice(0, 4).join(', ')
+}
+
+export function generateExplanation(
+  breakdown: ScoreBreakdown,
+  input?: ScoringInput,
+): string {
+  const reasons = [
+    `Score ${breakdown.fitScore}/100 (${scoreLevel(breakdown.fitScore)})`,
+    `taille ${breakdown.sizeScore}/30`,
+    `secteur ${breakdown.industryScore}/30`,
+    `stack ${breakdown.techStackScore}/25`,
+    `GTM ${breakdown.gtmScore}/20`,
+  ]
+
+  if (input) {
+    const details = [
+      input.industry !== 'Unknown'
+        ? `secteur detecte: ${input.industry}`
+        : 'secteur peu explicite',
+      input.estimatedSize !== 'Unknown'
+        ? `taille estimee: ${input.estimatedSize}`
+        : 'taille difficile a estimer',
+      `stack observee: ${formatList(input.techStack, 'aucune stack forte')}`,
+      `signaux GTM: ${formatList(input.gtmSignals, 'peu de signaux visibles')}`,
+    ]
+
+    return `${reasons.join(' | ')}. ${details.join('. ')}.`
+  }
 
   if (breakdown.sizeScore >= 25) {
-    reasons.push('Enterprise target detected')
+    reasons.push('taille interessante')
   }
   if (breakdown.industryScore >= 30) {
-    reasons.push('High-value industry (SaaS/fintech/etc)')
+    reasons.push('secteur tres proche SaaS/tech')
   }
   if (breakdown.techStackScore >= 20) {
-    reasons.push('Modern tech stack indicates growth-stage company')
+    reasons.push('stack moderne')
   }
   if (breakdown.gtmScore >= 15) {
-    reasons.push('Strong GTM signals (pricing, demo, etc)')
-  }
-
-  if (reasons.length === 0) {
-    return 'Limited GTM signals detected. Company may be early-stage or B2C focused.'
+    reasons.push('signaux GTM forts')
   }
 
   return reasons.join('. ') + '.'

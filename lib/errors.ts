@@ -23,6 +23,17 @@ export function handleError(error: unknown): AppError {
     return error
   }
 
+  if (
+    error instanceof Error &&
+    error.name === 'ZodError'
+  ) {
+    return new AppError(
+      ErrorType.VALIDATION_ERROR,
+      error.message,
+      400,
+    )
+  }
+
   if (error instanceof Error) {
     return new AppError(
       ErrorType.INTERNAL_ERROR,
@@ -40,8 +51,8 @@ export function handleError(error: unknown): AppError {
 
 export function isValidUrl(url: string): boolean {
   try {
-    new URL(url.startsWith('http') ? url : `https://${url}`)
-    return true
+    const parsed = new URL(/^https?:\/\//i.test(url) ? url : `https://${url}`)
+    return ['http:', 'https:'].includes(parsed.protocol)
   } catch {
     return false
   }

@@ -5,9 +5,47 @@ export interface ScrapedData {
   description: string
   keywords: string[]
   scripts: string[]
+  links: string[]
   favicon?: string
   favicon64?: string
   html: string
+}
+
+function decodeHtml(value: string): string {
+  return value
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+}
+
+function getMetaContent(html: string, name: string): string {
+  const patterns = [
+    new RegExp(
+      `<meta[^>]+name=["']${name}["'][^>]+content=["']([^"']+)["'][^>]*>`,
+      'i',
+    ),
+    new RegExp(
+      `<meta[^>]+content=["']([^"']+)["'][^>]+name=["']${name}["'][^>]*>`,
+      'i',
+    ),
+    new RegExp(
+      `<meta[^>]+property=["']og:${name}["'][^>]+content=["']([^"']+)["'][^>]*>`,
+      'i',
+    ),
+    new RegExp(
+      `<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:${name}["'][^>]*>`,
+      'i',
+    ),
+  ]
+
+  for (const pattern of patterns) {
+    const match = html.match(pattern)
+    if (match?.[1]) return decodeHtml(match[1].trim())
+  }
+
+  return ''
 }
 
 export async function scrapeWebsite(url: string): Promise<ScrapedData> {
@@ -38,26 +76,36 @@ export async function scrapeWebsite(url: string): Promise<ScrapedData> {
     const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i)
     const title = titleMatch ? titleMatch[1].trim() : ''
 
-    const descMatch = html.match(
-      /<meta\s+name="description"\s+content="([^"]+)"/i,
-    )
-    const description = descMatch ? descMatch[1] : ''
+    const description = getMetaContent(html, 'description')
 
-    const keywordsMatch = html.match(
-      /<meta\s+name="keywords"\s+content="([^"]+)"/i,
-    )
-    const keywords = keywordsMatch ? keywordsMatch[1].split(',').map(k => k.trim()) : []
+    const keywords = getMetaContent(html, 'keywords')
+      .split(',')
+      .map((keyword) => keyword.trim())
+      .filter(Boolean)
 
-    const scriptMatches = html.match(/<script[^>]*src="([^"]+)"[^>]*>/gi) || []
+    const scriptMatches =
+      html.match(/<script[^>]*src=["'][^"']+["'][^>]*>/gi) || []
     const scripts = scriptMatches
-      .map(s => {
-        const match = s.match(/src="([^"]+)"/i)
+      .map((script) => {
+        const match = script.match(/src=["']([^"']+)["']/i)
         return match ? match[1] : ''
       })
       .filter(Boolean)
 
+    const linkMatches = html.match(/<a[^>]*href=["'][^"']+["'][^>]*>/gi) || []
+    const links = Array.from(
+      new Set(
+        linkMatches
+          .map((link) => {
+            const match = link.match(/href=["']([^"']+)["']/i)
+            return match ? decodeHtml(match[1].trim()) : ''
+          })
+          .filter(Boolean),
+      ),
+    ).slice(0, 80)
+
     const faviconMatch = html.match(
-      /<link[^>]*rel="(?:icon|shortcut icon)"[^>]*href="([^"]+)"/i,
+      /<link[^>]*rel=["'](?:icon|shortcut icon|apple-touch-icon)["'][^>]*href=["']([^"']+)["']/i,
     )
     const favicon = faviconMatch ? faviconMatch[1] : undefined
 
@@ -66,6 +114,7 @@ export async function scrapeWebsite(url: string): Promise<ScrapedData> {
       description,
       keywords,
       scripts,
+      links,
       favicon,
       html: html.substring(0, 50000),
     }

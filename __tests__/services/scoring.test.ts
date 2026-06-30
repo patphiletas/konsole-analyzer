@@ -76,6 +76,23 @@ describe('Scoring', () => {
     expect(explanation.length).toBeGreaterThan(10)
   })
 
+  it('should explain score with detected business context', () => {
+    const input = {
+      estimatedSize: 'scale-up',
+      industry: 'SaaS / Software',
+      techStack: ['Next.js', 'Stripe'],
+      gtmSignals: ['Pricing page', 'Demo booking'],
+    }
+    const breakdown = calculateFitScore(input)
+
+    const explanation = generateExplanation(breakdown, input)
+
+    expect(explanation).toContain(`Score ${breakdown.fitScore}/100`)
+    expect(explanation).toContain('secteur detecte: SaaS / Software')
+    expect(explanation).toContain('stack observee: Next.js, Stripe')
+    expect(explanation).toContain('signaux GTM: Pricing page, Demo booking')
+  })
+
   it('should cap score at 100', () => {
     const breakdown = calculateFitScore({
       estimatedSize: 'enterprise',

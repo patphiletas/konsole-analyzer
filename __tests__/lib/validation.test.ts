@@ -14,11 +14,14 @@ describe('Validation', () => {
       }
     })
 
-    it('should reject URL without protocol (strict mode)', () => {
+    it('should accept URL without protocol', () => {
       const result = analyzeRequestSchema.safeParse({
         url: 'example.com',
       })
-      expect(result.success).toBe(false)
+      expect(result.success).toBe(true)
+      if (result.success) {
+        expect(result.data.url).toBe('example.com')
+      }
     })
 
     it('should reject invalid URL', () => {
@@ -52,10 +55,19 @@ describe('Validation', () => {
         url: 'https://example.com',
         companyName: 'Example Inc',
         description: 'A great company',
+        industry: 'SaaS',
+        estimatedSize: 'scale-up',
         techStack: ['React', 'Node.js'],
         gtmSignals: ['pricing'],
         fitScore: 75,
+        scoreBreakdown: {
+          size: 30,
+          industry: 20,
+          techStack: 15,
+          gtm: 10,
+        },
         explanation: 'High fit',
+        analysisSource: 'Heuristics',
         analyzedAt: new Date().toISOString(),
       })
       expect(result.success).toBe(true)
@@ -66,10 +78,19 @@ describe('Validation', () => {
         url: 'https://example.com',
         companyName: 'Example Inc',
         description: 'A great company',
+        industry: 'SaaS',
+        estimatedSize: 'scale-up',
         techStack: ['React'],
         gtmSignals: ['pricing'],
         fitScore: 101,
+        scoreBreakdown: {
+          size: 30,
+          industry: 20,
+          techStack: 15,
+          gtm: 10,
+        },
         explanation: 'High fit',
+        analysisSource: 'Heuristics',
         analyzedAt: new Date().toISOString(),
       })
       expect(result.success).toBe(false)
@@ -80,10 +101,19 @@ describe('Validation', () => {
         url: 'https://example.com',
         companyName: 'Example Inc',
         description: 'A great company',
+        industry: 'SaaS',
+        estimatedSize: 'scale-up',
         techStack: ['React'],
         gtmSignals: ['pricing'],
         fitScore: -1,
+        scoreBreakdown: {
+          size: 30,
+          industry: 20,
+          techStack: 15,
+          gtm: 10,
+        },
         explanation: 'High fit',
+        analysisSource: 'Heuristics',
         analyzedAt: new Date().toISOString(),
       })
       expect(result.success).toBe(false)
@@ -94,10 +124,19 @@ describe('Validation', () => {
         url: 'https://example.com',
         companyName: 'Example Inc',
         description: 'A great company',
+        industry: 'SaaS',
+        estimatedSize: 'scale-up',
         techStack: ['React'],
         gtmSignals: ['pricing'],
         fitScore: 75,
+        scoreBreakdown: {
+          size: 30,
+          industry: 20,
+          techStack: 15,
+          gtm: 10,
+        },
         explanation: 'High fit',
+        analysisSource: 'Heuristics',
         analyzedAt: 'not-a-date',
       })
       expect(result.success).toBe(false)
