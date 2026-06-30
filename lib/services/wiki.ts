@@ -1,0 +1,152 @@
+export interface WikiIntelligence {
+  found: boolean
+  logoUrl: string
+  wikiUrl?: string
+  summary?: string
+  thumbnail?: string
+  founder?: string
+  ceo?: string
+  founded?: string
+}
+
+const TIMEOUT_MS = 5000
+
+async function fetchJson<T>(url: string): Promise<T | null> {
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(TIMEOUT_MS) })
+    if (!res.ok) return null
+    return res.json() as Promise<T>
+  } catch {
+    return null
+  }
+}
+
+async function searchWikipediaTitle(query: string): Promise<string | null> {
+  const url = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&srlimit=3&format=json&srprop=`
+  const data = await fetchJson<{
+    query?: { search?: Array<{ title: string }> }
+  }>(url)
+  return data?.query?.search?.[0]?.title ?? null
+}
+
+async function fetchWikipediaSummary(title: string): Promise<{
+  extract: string
+  thumbnailUrl?: string
+  pageUrl: string
+} | null> {
+  const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`
+  const data = await fetchJson<{
+    extract?: string
+    thumbnail?: { source: string }
+    content_urls?: { desktop?: { page?: string } }
+  }>(url)
+  if (!data?.extract) return null
+  return {
+    extract: data.extract,
+    thumbnailUrl: data.thumbnail?.source,
+    pageUrl: data.content_urls?.desktop?.page ?? `https://en.wikipedia.org/wiki/${encodeURIComponent(title)}`,
+  }
+}
+
+async function fetchWikidataId(wikipediaTitle: string): Promise<string | null> {
+  const url = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(wikipediaTitle)}&prop=pageprops&format=json`
+  const data = await fetchJson<{
+    query?: { pages?: Record<string, { pageprops?: { wikibase_item?: string } }> }
+  }>(url)
+  const pages = data?.query?.pages ?? {}
+  const page = Object.values(pages)[0]
+  return page?.pageprops?.wikibase_item ?? null
+}
+
+type WikidataClaimValue =
+  | { type: 'wikibase-entityid'; value: { id: string } }
+  | { type: 'time'; value: { time: string } }
+  | { type: 'string'; value: string }
+
+type WikidataClaims = Record<
+  string,
+  Array<{ mainsnak: { datavalue?: WikidataClaimValue } }>
+>
+
+function extractEntityId(claims: WikidataClaims, property: string): string | null {
+  const val = claims[property]?.[0]?.mainsnak?.datavalue
+  if (val?.type === 'wikibase-entityid') return val.value.id
+  return null
+}
+
+function extractYear(claims: WikidataClaims, property: string): string | null {
+  const val = claims[property]?.[0]?.mainsnak?.datavalue
+  if (val?.type === 'time') {
+    const match = val.value.time.match(/\+(\d{4})/)
+    return match?.[1] ?? null
+  }
+  return null
+}
+
+async function fetchWikidataClaims(entityId: string): Promise<WikidataClaims | null> {
+  const url = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${entityId}&props=claims&format=json`
+  const data = await fetchJson<{
+    entities?: Record<string, { claims?: WikidataClaims }>
+  }>(url)
+  return data?.entities?.[entityId]?.claims ?? null
+}
+
+async function fetchWikidataLabels(ids: string[]): Promise<Record<string, string>> {
+  if (!ids.length) return {}
+  const url = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${ids.join('|')}&props=labels&format=json&languages=fr%7Cen`
+  const data = await fetchJson<{
+    entities?: Record<string, { labels?: Record<string, { value: string }> }>
+  }>(url)
+  if (!data?.entities) return {}
+
+  const result: Record<string, string> = {}
+  for (const [id, entity] of Object.entries(data.entities)) {
+    const label = entity.labels?.fr?.value ?? entity.labels?.en?.value
+    if (label) result[id] = label
+  }
+  return result
+}
+
+export async function lookupCompanyWiki(
+  companyName: string,
+  domain: string,
+): Promise<WikiIntelligence> {
+  const logoUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`
+
+  const title = await searchWikipediaTitle(`${companyName} company`)
+  if (!title) return { found: false, logoUrl }
+
+  const [summary, wikidataId] = await Promise.all([
+    fetchWikipediaSummary(title),
+    fetchWikidataId(title),
+  ])
+
+  if (!summary) return { found: false, logoUrl }
+
+  const result: WikiIntelligence = {
+    found: true,
+    logoUrl,
+    wikiUrl: summary.pageUrl,
+    summary: summary.extract.slice(0, 400),
+    thumbnail: summary.thumbnailUrl,
+  }
+
+  if (!wikidataId) return result
+
+  const claims = await fetchWikidataClaims(wikidataId)
+  if (!claims) return result
+
+  const founderId = extractEntityId(claims, 'P112')
+  const ceoId = extractEntityId(claims, 'P169')
+  const founded = extractYear(claims, 'P571')
+
+  if (founded) result.founded = founded
+
+  const entityIds = [founderId, ceoId].filter((id): id is string => id !== null)
+  const labels = await fetchWikidataLabels(entityIds)
+
+  if (founderId && labels[founderId]) result.founder = labels[founderId]
+  if (ceoId && labels[ceoId]) result.ceo = labels[ceoId]
+
+  return result
+}

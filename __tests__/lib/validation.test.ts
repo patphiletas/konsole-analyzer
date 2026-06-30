@@ -73,6 +73,15 @@ describe('Validation', () => {
         analysisSource: 'Heuristics',
         emailProvider: 'Google Workspace',
         dnsTools: ['HubSpot', 'Salesforce'],
+        enrichment: {
+          found: true,
+          logoUrl: 'https://logo.clearbit.com/example.com',
+          wikiUrl: 'https://en.wikipedia.org/wiki/Example',
+          founder: 'Jane Doe',
+          ceo: 'John Doe',
+          founded: '2010',
+          summary: 'Example Inc is a SaaS company.',
+        },
         analyzedAt: new Date().toISOString(),
       })
       expect(result.success).toBe(true)

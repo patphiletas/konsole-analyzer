@@ -37,6 +37,16 @@ export const analyzeResponseSchema = z.object({
   analysisSource: z.string(),
   emailProvider: z.string(),
   dnsTools: z.array(z.string()),
+  enrichment: z.object({
+    found: z.boolean(),
+    logoUrl: z.string(),
+    wikiUrl: z.string().optional(),
+    summary: z.string().optional(),
+    thumbnail: z.string().optional(),
+    founder: z.string().optional(),
+    ceo: z.string().optional(),
+    founded: z.string().optional(),
+  }),
   analyzedAt: z.string().datetime(),
 })
 

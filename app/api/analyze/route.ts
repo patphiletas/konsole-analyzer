@@ -10,6 +10,7 @@ import { scrapeWebsite } from '@/lib/services/scraper'
 import { analyzeWebsiteWithLLM } from '@/lib/services/llm'
 import { analyzeWebsiteWithHeuristics } from '@/lib/services/heuristics'
 import { lookupDns } from '@/lib/services/dns'
+import { lookupCompanyWiki, type WikiIntelligence } from '@/lib/services/wiki'
 import { calculateFitScore, generateExplanation } from '@/lib/services/scoring'
 import { analytics } from '@/lib/analytics'
 
@@ -25,20 +26,24 @@ export async function POST(request: NextRequest) {
       ? validated.url
       : `https://${validated.url}`
 
-    analytics.track({
-      type: 'analyze_request',
-      url,
-    })
+    analytics.track({ type: 'analyze_request', url })
 
     if (!isValidUrl(url)) {
       throw new AppError(ErrorType.INVALID_URL, 'Invalid URL format', 400)
     }
 
     const hostname = new URL(url).hostname.replace(/^www\./, '')
-    const [scraped, dnsIntel] = await Promise.all([
+    const roughName = hostname.split('.')[0].replace(/^\w/, (l) => l.toUpperCase())
+
+    const [scraped, dnsIntel, wikiIntel] = await Promise.all([
       scrapeWebsite(url),
       lookupDns(hostname).catch(() => ({ emailProvider: 'Unknown', toolsFromDns: [] })),
+      lookupCompanyWiki(roughName, hostname).catch((): WikiIntelligence => ({
+        found: false,
+        logoUrl: `https://logo.clearbit.com/${hostname}`,
+      })),
     ])
+
     const llmEnabled = Boolean(process.env.OPENROUTER_API_KEY)
     const llmAnalysis = llmEnabled
       ? await analyzeWebsiteWithLLM(
@@ -56,6 +61,7 @@ export async function POST(request: NextRequest) {
           return undefined
         })
       : undefined
+
     const analysis = analyzeWebsiteWithHeuristics(scraped, url, llmAnalysis)
 
     const scoringInput = {
@@ -66,13 +72,7 @@ export async function POST(request: NextRequest) {
     }
     const breakdown = calculateFitScore(scoringInput)
 
-    const duration = Date.now() - startTime
-
-    analytics.track({
-      type: 'analyze_success',
-      url,
-      duration,
-    })
+    analytics.track({ type: 'analyze_success', url, duration: Date.now() - startTime })
 
     return toJsonResponse(
       createSuccessResponse({
@@ -94,23 +94,29 @@ export async function POST(request: NextRequest) {
         analysisSource: llmAnalysis ? 'LLM + heuristics' : 'Heuristics',
         emailProvider: dnsIntel.emailProvider,
         dnsTools: dnsIntel.toolsFromDns,
+        enrichment: {
+          found: wikiIntel.found,
+          logoUrl: scraped.favicon
+            ? (() => { try { return new URL(scraped.favicon, `https://${hostname}`).href } catch { return wikiIntel.logoUrl } })()
+            : wikiIntel.logoUrl,
+          wikiUrl: wikiIntel.wikiUrl,
+          summary: wikiIntel.summary,
+          thumbnail: wikiIntel.thumbnail,
+          founder: wikiIntel.founder,
+          ceo: wikiIntel.ceo,
+          founded: wikiIntel.founded,
+        },
         analyzedAt: new Date().toISOString(),
       }),
       200,
     )
   } catch (error) {
     const appError = handleError(error)
-    const duration = Date.now() - startTime
-
     analytics.track({
       type: 'analyze_error',
-      duration,
+      duration: Date.now() - startTime,
       error: appError.message,
     })
-
-    return toJsonResponse(
-      createErrorResponse(error),
-      appError.statusCode,
-    )
+    return toJsonResponse(createErrorResponse(error), appError.statusCode)
   }
 }

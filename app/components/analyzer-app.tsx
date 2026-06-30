@@ -16,6 +16,17 @@ interface ScoreBreakdown {
   gtm: number
 }
 
+interface Enrichment {
+  found: boolean
+  logoUrl: string
+  wikiUrl?: string
+  summary?: string
+  thumbnail?: string
+  founder?: string
+  ceo?: string
+  founded?: string
+}
+
 interface AnalysisResult {
   url: string
   companyName: string
@@ -30,6 +41,7 @@ interface AnalysisResult {
   analysisSource: string
   emailProvider: string
   dnsTools: string[]
+  enrichment: Enrichment
   analyzedAt: string
 }
 
@@ -217,16 +229,24 @@ export default function Home() {
             <div className="space-y-5">
               <div className="rounded-lg border border-zinc-200 bg-white p-5">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <p className="break-all text-sm text-zinc-500">
-                      {result.url}
-                    </p>
-                    <h2 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-950">
-                      {result.companyName}
-                    </h2>
-                    <p className="mt-3 max-w-3xl leading-7 text-zinc-600">
-                      {result.description}
-                    </p>
+                  <div className="flex items-start gap-4">
+                    <img
+                      src={result.enrichment.logoUrl}
+                      alt={result.companyName}
+                      className="mt-1 h-10 w-10 shrink-0 rounded-lg border border-zinc-100 object-contain p-0.5"
+                      onError={(e) => { e.currentTarget.style.display = 'none' }}
+                    />
+                    <div>
+                      <p className="break-all text-sm text-zinc-500">
+                        {result.url}
+                      </p>
+                      <h2 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-950">
+                        {result.companyName}
+                      </h2>
+                      <p className="mt-3 max-w-3xl leading-7 text-zinc-600">
+                        {result.description}
+                      </p>
+                    </div>
                   </div>
                   <span className="w-fit rounded-full border border-zinc-200 px-3 py-1 text-sm text-zinc-600">
                     {result.analysisSource}
@@ -248,6 +268,51 @@ export default function Home() {
                   </div>
                 </div>
               </div>
+
+              {result.enrichment.found && (
+                <div className="rounded-lg border border-zinc-200 bg-white p-5">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-zinc-950">
+                      Données publiques
+                    </h3>
+                    {result.enrichment.wikiUrl && (
+                      <a
+                        href={result.enrichment.wikiUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 hover:underline"
+                      >
+                        Wikipedia →
+                      </a>
+                    )}
+                  </div>
+                  <dl className="mt-4 grid gap-2 sm:grid-cols-3">
+                    {result.enrichment.founded && (
+                      <div className="rounded-md bg-zinc-50 p-3">
+                        <dt className="text-xs text-zinc-500">Fondée en</dt>
+                        <dd className="mt-0.5 font-medium text-zinc-950">{result.enrichment.founded}</dd>
+                      </div>
+                    )}
+                    {result.enrichment.founder && (
+                      <div className="rounded-md bg-zinc-50 p-3">
+                        <dt className="text-xs text-zinc-500">Fondateur</dt>
+                        <dd className="mt-0.5 font-medium text-zinc-950">{result.enrichment.founder}</dd>
+                      </div>
+                    )}
+                    {result.enrichment.ceo && result.enrichment.ceo !== result.enrichment.founder && (
+                      <div className="rounded-md bg-zinc-50 p-3">
+                        <dt className="text-xs text-zinc-500">Dirigeant actuel</dt>
+                        <dd className="mt-0.5 font-medium text-zinc-950">{result.enrichment.ceo}</dd>
+                      </div>
+                    )}
+                  </dl>
+                  {result.enrichment.summary && (
+                    <p className="mt-4 text-sm leading-6 text-zinc-600">
+                      {result.enrichment.summary}
+                    </p>
+                  )}
+                </div>
+              )}
 
               <div className="rounded-lg border border-zinc-200 bg-white p-5">
                 <h3 className="text-lg font-semibold text-zinc-950">
