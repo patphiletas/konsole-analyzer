@@ -1,6 +1,7 @@
 export interface WikiIntelligence {
   found: boolean
   logoUrl: string
+  screenshotUrl: string
   wikiUrl?: string
   summary?: string
   thumbnail?: string
@@ -21,12 +22,15 @@ async function fetchJson<T>(url: string): Promise<T | null> {
   }
 }
 
-async function searchWikipediaTitle(query: string): Promise<string | null> {
-  const url = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&srlimit=3&format=json&srprop=`
+async function searchWikipediaTitle(query: string, companyName: string): Promise<string | null> {
+  const url = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&srlimit=5&format=json&srprop=`
   const data = await fetchJson<{
     query?: { search?: Array<{ title: string }> }
   }>(url)
-  return data?.query?.search?.[0]?.title ?? null
+  const results = data?.query?.search ?? []
+  const name = companyName.toLowerCase()
+  const match = results.find((r) => r.title.toLowerCase().includes(name))
+  return match?.title ?? null
 }
 
 async function fetchWikipediaSummary(title: string): Promise<{
@@ -112,20 +116,22 @@ export async function lookupCompanyWiki(
   domain: string,
 ): Promise<WikiIntelligence> {
   const logoUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`
+  const screenshotUrl = `https://image.thum.io/get/width/1280/crop/800/https://${domain}`
 
-  const title = await searchWikipediaTitle(`${companyName} company`)
-  if (!title) return { found: false, logoUrl }
+  const title = await searchWikipediaTitle(`${companyName} company`, companyName)
+  if (!title) return { found: false, logoUrl, screenshotUrl }
 
   const [summary, wikidataId] = await Promise.all([
     fetchWikipediaSummary(title),
     fetchWikidataId(title),
   ])
 
-  if (!summary) return { found: false, logoUrl }
+  if (!summary) return { found: false, logoUrl, screenshotUrl }
 
   const result: WikiIntelligence = {
     found: true,
     logoUrl,
+    screenshotUrl,
     wikiUrl: summary.pageUrl,
     summary: summary.extract.slice(0, 400),
     thumbnail: summary.thumbnailUrl,

@@ -40,7 +40,8 @@ export async function POST(request: NextRequest) {
       lookupDns(hostname).catch(() => ({ emailProvider: 'Unknown', toolsFromDns: [] })),
       lookupCompanyWiki(roughName, hostname).catch((): WikiIntelligence => ({
         found: false,
-        logoUrl: `https://logo.clearbit.com/${hostname}`,
+        logoUrl: `https://www.google.com/s2/favicons?domain=${hostname}&sz=128`,
+        screenshotUrl: `https://image.thum.io/get/width/1280/crop/800/https://${hostname}`,
       })),
     ])
 
@@ -99,6 +100,7 @@ export async function POST(request: NextRequest) {
           logoUrl: scraped.favicon
             ? (() => { try { return new URL(scraped.favicon, `https://${hostname}`).href } catch { return wikiIntel.logoUrl } })()
             : wikiIntel.logoUrl,
+          screenshotUrl: wikiIntel.screenshotUrl,
           wikiUrl: wikiIntel.wikiUrl,
           summary: wikiIntel.summary,
           thumbnail: wikiIntel.thumbnail,

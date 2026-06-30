@@ -1,0 +1,105 @@
+# Tests — Kpratik
+
+52 tests Vitest répartis sur 7 fichiers. À mettre à jour à chaque nouvelle feature.
+
+Commande : `npm test`
+
+---
+
+## `__tests__/lib/errors.test.ts` — Gestion des erreurs (9 tests)
+
+| Test | Ce qu'il vérifie |
+|---|---|
+| AppError : propriétés correctes | `type`, `message`, `statusCode` bien assignés |
+| AppError : statusCode 500 par défaut | Valeur par défaut si non fourni |
+| handleError : retourne AppError tel quel | Pas de double wrapping |
+| handleError : wrapping d'une Error générique | Conversion en `AppError` de type `INTERNAL_ERROR` |
+| handleError : erreurs inconnues | Gestion des non-Error (string, number…) |
+| isValidUrl : accepte HTTPS | `https://stripe.com` → valide |
+| isValidUrl : accepte HTTP | `http://example.com` → valide |
+| isValidUrl : accepte sans protocole | `stripe.com` → valide |
+| isValidUrl : accepte avec path | `stripe.com/pricing` → valide |
+| isValidUrl : rejette les invalides | `not-a-url`, chaîne vide → invalide |
+
+---
+
+## `__tests__/lib/validation.test.ts` — Schémas Zod (9 tests)
+
+| Test | Ce qu'il vérifie |
+|---|---|
+| Request : URL avec http | Acceptée telle quelle |
+| Request : URL sans protocole | `stripe.com` accepté |
+| Request : URL invalide | Rejet avec message d'erreur |
+| Request : URL vide | Rejet |
+| Request : trim des espaces | `  stripe.com  ` → nettoyé |
+| Response : objet valide complet | Tous les champs requis présents et typés |
+| Response : fitScore > 100 | Rejeté |
+| Response : fitScore négatif | Rejeté |
+| Response : date invalide | `analyzedAt` doit être un ISO datetime |
+
+---
+
+## `__tests__/lib/api-middleware.test.ts` — Format de réponse API (7 tests)
+
+| Test | Ce qu'il vérifie |
+|---|---|
+| createSuccessResponse : données encapsulées | `{ success: true, data: ... }` |
+| createSuccessResponse : timestamp ISO | Champ `timestamp` présent et valide |
+| createErrorResponse : AppError | Code et message transmis fidèlement |
+| createErrorResponse : Error générique | Wrapping correct |
+| createErrorResponse : ZodError | Type `VALIDATION_ERROR`, message de la première issue |
+| createErrorResponse : timestamp | Présent dans la réponse d'erreur |
+
+---
+
+## `__tests__/services/heuristics.test.ts` — Analyse heuristique (1 test)
+
+| Test | Ce qu'il vérifie |
+|---|---|
+| Détection complète depuis HTML public | Nom entreprise, secteur, taille, stack (`TechSignal[]` avec confidence `high`), signaux GTM |
+
+---
+
+## `__tests__/services/scoring.test.ts` — Score SaaS B2B (8 tests)
+
+| Test | Ce qu'il vérifie |
+|---|---|
+| Score élevé pour enterprise SaaS | Profil idéal → score > 70 |
+| Score faible pour B2C early-stage | Profil éloigné → score < 40 |
+| Industries à haute valeur | `SaaS`, `fintech`… → score secteur > 0 |
+| Stack à haute valeur | React, Stripe, Segment… → score stack > 5 |
+| Signaux GTM reconnus | Pricing, free trial, demo → score GTM > 5 |
+| Explication pour score élevé | Texte généré non vide et cohérent |
+| Explication avec contexte business | Contient secteur détecté, taille estimée, stack observée |
+| Plafonnement à 100 | Somme des dimensions ne dépasse pas 100 |
+
+---
+
+## `__tests__/services/dns.test.ts` — Analyse DNS (10 tests)
+
+| Test | Ce qu'il vérifie |
+|---|---|
+| SPF : extraction des outils | `include:hubspot.com` → HubSpot, Salesforce, SendGrid |
+| SPF : pas de record SPF | `toolsFromDns` vide |
+| SPF : suppression des guillemets | TXT avec `"..."` parsé correctement |
+| SPF : pas de TXT records | Résultat vide |
+| MX : Google Workspace | `aspmx.l.google.com` → détecté |
+| MX : Microsoft 365 | `protection.outlook.com` → détecté |
+| MX : provider inconnu | `Unknown` retourné |
+| MX : pas de records | `Unknown` retourné |
+| Résilience : erreur réseau | Catch dans la route, pas de crash |
+| Résilience : NXDOMAIN (Status != 0) | Réponse vide sans erreur |
+
+---
+
+## `__tests__/services/wiki.test.ts` — Enrichissement Wikipedia/Wikidata (7 tests)
+
+| Test | Ce qu'il vérifie |
+|---|---|
+| Logo toujours présent | Google favicon URL construite même si Wikipedia ne répond pas |
+| Pas de résultat Wikipedia | `found: false`, pas de données enrichies |
+| Wikipedia sans Wikidata | `found: true`, summary et wikiUrl présents, founder absent |
+| Données complètes Wikipedia + Wikidata | Fondateur, CEO, année extraits et labellisés |
+| Troncature du résumé | Résumé limité à 400 caractères |
+| Erreur réseau | Retour propre `{ found: false, logoUrl }` sans exception |
+| Extraction année avec précision mois | `+2015-03-01T...` → `"2015"` |

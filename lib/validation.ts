@@ -40,6 +40,7 @@ export const analyzeResponseSchema = z.object({
   enrichment: z.object({
     found: z.boolean(),
     logoUrl: z.string(),
+    screenshotUrl: z.string(),
     wikiUrl: z.string().optional(),
     summary: z.string().optional(),
     thumbnail: z.string().optional(),

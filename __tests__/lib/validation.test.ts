@@ -75,7 +75,8 @@ describe('Validation', () => {
         dnsTools: ['HubSpot', 'Salesforce'],
         enrichment: {
           found: true,
-          logoUrl: 'https://logo.clearbit.com/example.com',
+          logoUrl: 'https://www.google.com/s2/favicons?domain=example.com&sz=128',
+          screenshotUrl: 'https://image.thum.io/get/width/1280/crop/800/https%3A%2F%2Fexample.com',
           wikiUrl: 'https://en.wikipedia.org/wiki/Example',
           founder: 'Jane Doe',
           ceo: 'John Doe',

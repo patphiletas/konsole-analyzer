@@ -19,6 +19,7 @@ interface ScoreBreakdown {
 interface Enrichment {
   found: boolean
   logoUrl: string
+  screenshotUrl: string
   wikiUrl?: string
   summary?: string
   thumbnail?: string
@@ -267,6 +268,16 @@ export default function Home() {
                     </p>
                   </div>
                 </div>
+              </div>
+
+              <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
+                <img
+                  src={result.enrichment.screenshotUrl}
+                  alt={`Aperçu de ${result.companyName}`}
+                  className="w-full object-cover object-top"
+                  style={{ maxHeight: '220px' }}
+                  onError={(e) => { e.currentTarget.style.display = 'none' }}
+                />
               </div>
 
               {result.enrichment.found && (
