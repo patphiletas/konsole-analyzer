@@ -10,6 +10,7 @@ Application deployee : https://kpratik.vercel.app/
 - Scraping serveur des donnees publiques : title, meta description, keywords, scripts et liens.
 - Detection heuristique de stack technique : Next.js, React, HubSpot, Stripe, Segment, Shopify, WordPress, etc.
 - Detection de signaux GTM : pricing, demo, free trial, docs, API, blog, case studies, integrations.
+- Analyse DNS (TXT/MX) via Google DoH : outils marketing/sales depuis le SPF record, provider email depuis les MX.
 - Scoring automatique sur 100 pour evaluer le fit d'une entreprise SaaS B2B.
 - Explication du score obtenu avec le detail taille, secteur, stack et signaux GTM.
 - Fallback 100% gratuit : l'application fonctionne sans cle API externe.
@@ -35,6 +36,7 @@ app/
 lib/
   services/scraper.ts       Fetch HTML + extraction title/meta/scripts/links
   services/heuristics.ts    Analyse locale sans API payante
+  services/dns.ts           Lookup TXT/MX via Google DoH (outils SPF, provider email)
   services/llm.ts           Enrichissement OpenRouter optionnel
   services/scoring.ts       Score SaaS B2B et explication
   validation.ts             Schemas Zod
@@ -73,8 +75,32 @@ npm run build
 
 Etat actuel :
 
-- `npm test` : 34 tests passent.
+- `npm test` : 45 tests passent.
 - `npm run build` : build production Next.js OK.
+
+## Signaux analyses
+
+Ce tableau recense ce que l'application cherche a detecter et comment elle le fait. A mettre a jour a chaque nouveau signal ou source ajoutee.
+
+| Ce qu'on cherche | Comment on le trouve |
+|---|---|
+| **Nom de la boite** | Balise `<title>` — partie avant le `\|` ou `-` |
+| **Description** | `<meta name="description">` ou `<meta property="og:description">` |
+| **Secteur** | Regex sur title, meta, liens et HTML — ex. `saas\|workflow\|crm` → SaaS |
+| **Taille estimee** | Regex sur le texte — ex. `enterprise\|fortune 500` → Enterprise, `series [abcde]` → Scale-up |
+| **Stack technique** | Trois niveaux de confiance : **Confirmé** (trouvé dans un `<script src>`) / **Probable** (dans le HTML) / **Indicatif** (mentionné dans le texte) |
+| **Pricing page** | Regex liens + texte — `pricing\|plans\|tarifs` |
+| **Demo booking** | Regex — `demo\|book a call\|contact sales` |
+| **Free trial** | Regex — `free trial\|start free\|try for free` |
+| **Sign up / PLG** | Regex — `sign up\|get started\|create account` |
+| **Docs / API** | Regex — `docs\|documentation\|api reference` |
+| **Blog / Content** | Regex — `blog\|resources\|guides\|academy` |
+| **Case studies** | Regex — `case stud\|customers\|success stor` |
+| **Integrations** | Regex — `integration\|marketplace\|apps` |
+| **Outils marketing/sales** | DNS TXT (SPF) via Google DoH — `include:hubspot.com` → HubSpot, `include:salesforce.com` → Salesforce, etc. (30+ outils mappes) |
+| **Provider email** | DNS MX via Google DoH — ex. `aspmx.l.google.com` → Google Workspace, `protection.outlook.com` → Microsoft 365 |
+
+Sources utilisees : **HTML public** (scraping), **DNS** (Google DoH, sans cle). Le **LLM** (OpenRouter) est optionnel et enrichit les champs companyName, description, industry, estimatedSize si une cle est configuree.
 
 ## Logique de scoring
 

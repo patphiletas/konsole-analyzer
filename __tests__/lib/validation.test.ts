@@ -57,7 +57,10 @@ describe('Validation', () => {
         description: 'A great company',
         industry: 'SaaS',
         estimatedSize: 'scale-up',
-        techStack: ['React', 'Node.js'],
+        techStack: [
+          { name: 'React', confidence: 'high' },
+          { name: 'Node.js', confidence: 'medium' },
+        ],
         gtmSignals: ['pricing'],
         fitScore: 75,
         scoreBreakdown: {

@@ -1,6 +1,22 @@
 import type { ScrapedData } from './scraper'
 import type { LLMAnalysis } from './llm'
 
+export type ConfidenceLevel = 'high' | 'medium' | 'low'
+
+export interface TechSignal {
+  name: string
+  confidence: ConfidenceLevel
+}
+
+export interface WebsiteAnalysis {
+  companyName: string
+  industry: string
+  estimatedSize: string
+  techStack: TechSignal[]
+  gtmSignals: string[]
+  description: string
+}
+
 const TECH_PATTERNS: Array<[string, RegExp]> = [
   ['Next.js', /next(?:\.js|js|\/static|\/data|\/image)|__next|_next/i],
   ['React', /react|react-dom|jsx/i],
@@ -48,19 +64,20 @@ const GTM_PATTERNS: Array<[string, RegExp]> = [
   ['Newsletter capture', /newsletter|subscribe/i],
 ]
 
-function uniq(values: string[]): string[] {
+function uniqStrings(values: string[]): string[] {
   return Array.from(new Set(values)).slice(0, 12)
 }
 
-function pageText(scraped: ScrapedData): string {
-  return [
-    scraped.title,
-    scraped.description,
-    scraped.keywords.join(' '),
-    scraped.links.join(' '),
-    scraped.scripts.join(' '),
-    scraped.html.replace(/<script[\s\S]*?<\/script>/gi, ' '),
-  ].join(' ')
+function uniqTechSignals(signals: TechSignal[]): TechSignal[] {
+  const seen = new Map<string, TechSignal>()
+  const order: ConfidenceLevel[] = ['high', 'medium', 'low']
+  for (const signal of signals) {
+    const existing = seen.get(signal.name)
+    if (!existing || order.indexOf(signal.confidence) < order.indexOf(existing.confidence)) {
+      seen.set(signal.name, signal)
+    }
+  }
+  return Array.from(seen.values()).slice(0, 12)
 }
 
 function detectByPatterns(
@@ -70,6 +87,29 @@ function detectByPatterns(
   return patterns
     .filter(([, pattern]) => pattern.test(source))
     .map(([label]) => label)
+}
+
+function detectTechStack(scraped: ScrapedData): TechSignal[] {
+  const scriptSource = scraped.scripts.join(' ')
+  const htmlSource = scraped.html.replace(/<script[\s\S]*?<\/script>/gi, ' ')
+  const textSource = [
+    scraped.title,
+    scraped.description,
+    scraped.keywords.join(' '),
+    scraped.links.join(' '),
+  ].join(' ')
+
+  const signals: TechSignal[] = []
+  for (const [name, pattern] of TECH_PATTERNS) {
+    if (pattern.test(scriptSource)) {
+      signals.push({ name, confidence: 'high' })
+    } else if (pattern.test(htmlSource)) {
+      signals.push({ name, confidence: 'medium' })
+    } else if (pattern.test(textSource)) {
+      signals.push({ name, confidence: 'low' })
+    }
+  }
+  return signals.slice(0, 12)
 }
 
 function estimateCompanyName(scraped: ScrapedData, url: string): string {
@@ -103,10 +143,15 @@ function estimateSize(source: string): string {
 }
 
 function mergeAnalyses(
-  heuristic: LLMAnalysis,
+  heuristic: WebsiteAnalysis,
   llmAnalysis?: LLMAnalysis,
-): LLMAnalysis {
+): WebsiteAnalysis {
   if (!llmAnalysis) return heuristic
+
+  const llmTechSignals: TechSignal[] = llmAnalysis.techStack.map((name) => ({
+    name,
+    confidence: 'medium' as ConfidenceLevel,
+  }))
 
   return {
     companyName:
@@ -121,8 +166,8 @@ function mergeAnalyses(
       llmAnalysis.estimatedSize !== 'Unknown'
         ? llmAnalysis.estimatedSize
         : heuristic.estimatedSize,
-    techStack: uniq([...llmAnalysis.techStack, ...heuristic.techStack]),
-    gtmSignals: uniq([...llmAnalysis.gtmSignals, ...heuristic.gtmSignals]),
+    techStack: uniqTechSignals([...heuristic.techStack, ...llmTechSignals]),
+    gtmSignals: uniqStrings([...llmAnalysis.gtmSignals, ...heuristic.gtmSignals]),
     description: llmAnalysis.description || heuristic.description,
   }
 }
@@ -131,16 +176,23 @@ export function analyzeWebsiteWithHeuristics(
   scraped: ScrapedData,
   url: string,
   llmAnalysis?: LLMAnalysis,
-): LLMAnalysis {
-  const source = pageText(scraped)
-  const industries = detectByPatterns(source, INDUSTRY_PATTERNS)
-  const techStack = detectByPatterns(source, TECH_PATTERNS)
-  const gtmSignals = detectByPatterns(source, GTM_PATTERNS)
+): WebsiteAnalysis {
+  const fullText = [
+    scraped.title,
+    scraped.description,
+    scraped.keywords.join(' '),
+    scraped.links.join(' '),
+    scraped.html.replace(/<script[\s\S]*?<\/script>/gi, ' '),
+  ].join(' ')
 
-  const heuristic: LLMAnalysis = {
+  const industries = detectByPatterns(fullText, INDUSTRY_PATTERNS)
+  const gtmSignals = detectByPatterns(fullText, GTM_PATTERNS)
+  const techStack = detectTechStack(scraped)
+
+  const heuristic: WebsiteAnalysis = {
     companyName: estimateCompanyName(scraped, url),
     industry: industries[0] || 'Unknown',
-    estimatedSize: estimateSize(source),
+    estimatedSize: estimateSize(fullText),
     techStack,
     gtmSignals,
     description:

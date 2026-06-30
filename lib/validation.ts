@@ -21,7 +21,10 @@ export const analyzeResponseSchema = z.object({
   description: z.string(),
   industry: z.string(),
   estimatedSize: z.string(),
-  techStack: z.array(z.string()),
+  techStack: z.array(z.object({
+    name: z.string(),
+    confidence: z.enum(['high', 'medium', 'low']),
+  })),
   gtmSignals: z.array(z.string()),
   fitScore: z.number().min(0).max(100),
   scoreBreakdown: z.object({

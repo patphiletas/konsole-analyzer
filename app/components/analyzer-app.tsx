@@ -2,6 +2,13 @@
 
 import { useState } from 'react'
 
+type ConfidenceLevel = 'high' | 'medium' | 'low'
+
+interface TechSignal {
+  name: string
+  confidence: ConfidenceLevel
+}
+
 interface ScoreBreakdown {
   size: number
   industry: number
@@ -15,7 +22,7 @@ interface AnalysisResult {
   description: string
   industry: string
   estimatedSize: string
-  techStack: string[]
+  techStack: TechSignal[]
   gtmSignals: string[]
   fitScore: number
   scoreBreakdown: ScoreBreakdown
@@ -291,17 +298,49 @@ export default function Home() {
               )}
 
               <div className="rounded-lg border border-zinc-200 bg-white p-5">
-                <h3 className="text-lg font-semibold text-zinc-950">
-                  Stack technique
-                </h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-zinc-950">
+                    Stack technique estimee
+                  </h3>
+                  <div className="flex items-center gap-3 text-xs text-zinc-500">
+                    <span className="flex items-center gap-1">
+                      <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+                      Confirme
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="inline-block h-2 w-2 rounded-full bg-amber-400" />
+                      Probable
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="inline-block h-2 w-2 rounded-full bg-zinc-300" />
+                      Indicatif
+                    </span>
+                  </div>
+                </div>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {result.techStack.length > 0 ? (
                     result.techStack.map((tech) => (
                       <span
-                        key={tech}
-                        className="rounded-full bg-zinc-100 px-3 py-1 text-sm font-medium text-zinc-800"
+                        key={tech.name}
+                        className="flex items-center gap-1.5 rounded-full bg-zinc-100 px-3 py-1 text-sm font-medium text-zinc-800"
+                        title={
+                          tech.confidence === 'high'
+                            ? 'Detecte dans les scripts charges'
+                            : tech.confidence === 'medium'
+                              ? 'Detecte dans le HTML'
+                              : 'Mentionne dans le contenu'
+                        }
                       >
-                        {tech}
+                        <span
+                          className={`inline-block h-2 w-2 rounded-full ${
+                            tech.confidence === 'high'
+                              ? 'bg-emerald-500'
+                              : tech.confidence === 'medium'
+                                ? 'bg-amber-400'
+                                : 'bg-zinc-300'
+                          }`}
+                        />
+                        {tech.name}
                       </span>
                     ))
                   ) : (

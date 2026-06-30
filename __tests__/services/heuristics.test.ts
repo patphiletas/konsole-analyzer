@@ -24,7 +24,11 @@ describe('Heuristic website analysis', () => {
     expect(analysis.industry).toBe('SaaS / Software')
     expect(analysis.estimatedSize).toBe('enterprise')
     expect(analysis.techStack).toEqual(
-      expect.arrayContaining(['Next.js', 'Stripe', 'HubSpot']),
+      expect.arrayContaining([
+        { name: 'Next.js', confidence: 'high' },
+        { name: 'Stripe', confidence: 'high' },
+        { name: 'HubSpot', confidence: 'high' },
+      ]),
     )
     expect(analysis.gtmSignals).toEqual(
       expect.arrayContaining(['Pricing page', 'Demo booking', 'Free trial']),

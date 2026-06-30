@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     const scoringInput = {
       estimatedSize: analysis.estimatedSize,
       industry: analysis.industry,
-      techStack: analysis.techStack,
+      techStack: analysis.techStack.map((t) => t.name),
       gtmSignals: analysis.gtmSignals,
     }
     const breakdown = calculateFitScore(scoringInput)
