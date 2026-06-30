@@ -270,13 +270,12 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
+              <div className="overflow-y-auto rounded-lg border border-zinc-200 bg-white" style={{ maxHeight: '220px' }}>
                 <img
                   src={result.enrichment.screenshotUrl}
                   alt={`Aperçu de ${result.companyName}`}
-                  className="w-full object-cover object-top"
-                  style={{ maxHeight: '220px' }}
-                  onError={(e) => { e.currentTarget.style.display = 'none' }}
+                  className="w-full"
+                  onError={(e) => { e.currentTarget.parentElement!.style.display = 'none' }}
                 />
               </div>
 
