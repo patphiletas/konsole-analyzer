@@ -12,6 +12,7 @@
 - [x] **Enrichissement Wikipedia/Wikidata** — fondateur, CEO, année de création, résumé, lien — filtre anti-faux-positif sur le titre *(enrichissement)*
 - [x] **Logo** — favicon scrapé en priorité, Google favicon API en fallback *(enrichissement)*
 - [x] **Screenshot** — aperçu visuel via Thum.io, scrollable dans son cadre, masqué si indisponible *(enrichissement)*
+- [x] **Signaux footer** — extraction `<footer>` : année de copyright, réseaux sociaux, certifications (SOC 2, ISO 27001…), forme juridique, siège social *(enrichissement)*
 - [x] **UI** — composant `analyzer-app.tsx`, breakdown score, section DNS (violet), stack avec confiance, données publiques *(enrichissement)*
 - [x] **Dossier DOC** — roadmap, sujet, tests, pitch vidéo *(documentation)*
 - [x] **52 tests Vitest** — 7 fichiers couvrant tous les services (errors, validation, middleware, heuristics, scoring, DNS, wiki) *(qualité)*

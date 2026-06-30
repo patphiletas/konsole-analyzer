@@ -73,6 +73,19 @@ describe('Validation', () => {
         analysisSource: 'Heuristics',
         emailProvider: 'Google Workspace',
         dnsTools: ['HubSpot', 'Salesforce'],
+        footerSignals: {
+          copyrightYear: '2015',
+          socialLinks: [
+            { name: 'LinkedIn', url: 'https://linkedin.com/company/example' },
+            { name: 'Twitter / X', url: 'https://twitter.com/example' },
+          ],
+          notableLinks: [
+            { name: 'Carrières', url: 'https://example.com/careers' },
+          ],
+          certifications: ['SOC 2'],
+          legalForm: 'Inc.',
+          headquarters: 'San Francisco',
+        },
         enrichment: {
           found: true,
           logoUrl: 'https://www.google.com/s2/favicons?domain=example.com&sz=128',

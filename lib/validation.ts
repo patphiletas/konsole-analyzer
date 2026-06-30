@@ -37,6 +37,14 @@ export const analyzeResponseSchema = z.object({
   analysisSource: z.string(),
   emailProvider: z.string(),
   dnsTools: z.array(z.string()),
+  footerSignals: z.object({
+    copyrightYear: z.string().optional(),
+    socialLinks: z.array(z.object({ name: z.string(), url: z.string() })),
+    notableLinks: z.array(z.object({ name: z.string(), url: z.string() })),
+    certifications: z.array(z.string()),
+    legalForm: z.string().optional(),
+    headquarters: z.string().optional(),
+  }),
   enrichment: z.object({
     found: z.boolean(),
     logoUrl: z.string(),

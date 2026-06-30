@@ -16,6 +16,7 @@ describe('Heuristic website analysis', () => {
         ],
         links: ['/pricing', '/book-a-demo', '/docs/api', '/customers'],
         html: '<main>Start free trial and contact sales for enterprise teams.</main>',
+        footerSignals: { socialLinks: [], notableLinks: [], certifications: [] },
       },
       'https://acme.example',
     )

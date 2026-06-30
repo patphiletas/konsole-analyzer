@@ -1,5 +1,19 @@
 import { AppError, ErrorType } from '../errors'
 
+export interface FooterLink {
+  name: string
+  url: string
+}
+
+export interface FooterSignals {
+  copyrightYear?: string
+  socialLinks: FooterLink[]
+  notableLinks: FooterLink[]
+  certifications: string[]
+  legalForm?: string
+  headquarters?: string
+}
+
 export interface ScrapedData {
   title: string
   description: string
@@ -9,6 +23,7 @@ export interface ScrapedData {
   favicon?: string
   favicon64?: string
   html: string
+  footerSignals: FooterSignals
 }
 
 function decodeHtml(value: string): string {
@@ -46,6 +61,78 @@ function getMetaContent(html: string, name: string): string {
   }
 
   return ''
+}
+
+function extractFooterHtml(html: string): string {
+  const footerTag = html.match(/<footer[\s\S]*?<\/footer>/i)
+  if (footerTag) return footerTag[0]
+  const divFooter = html.match(/<(?:div|section)[^>]+(?:id|class)=["'][^"']*footer[^"']*["'][^>]*>[\s\S]{0,3000}/i)
+  if (divFooter) return divFooter[0]
+  return html.slice(Math.floor(html.length * 0.85))
+}
+
+const SOCIAL_PATTERNS: Array<[string, RegExp]> = [
+  ['LinkedIn', /linkedin\.com/i],
+  ['Twitter / X', /twitter\.com|x\.com/i],
+  ['YouTube', /youtube\.com/i],
+  ['GitHub', /github\.com/i],
+  ['Facebook', /facebook\.com/i],
+  ['Instagram', /instagram\.com/i],
+]
+
+const NOTABLE_PATTERNS: Array<[string, RegExp]> = [
+  ['Carrières', /careers\.|jobs\.|\/careers|\/jobs/i],
+  ['Presse', /\/press|\/media|\/newsroom/i],
+  ['App Store', /apps\.apple\.com/i],
+  ['Google Play', /play\.google\.com/i],
+  ['Status', /status\./i],
+]
+
+const CERT_PATTERNS: Array<[string, RegExp]> = [
+  ['SOC 2', /soc\s*2/i],
+  ['ISO 27001', /iso\s*27001/i],
+  ['GDPR', /gdpr/i],
+  ['HIPAA', /hipaa/i],
+  ['PCI DSS', /pci[\s-]?dss/i],
+  ['FedRAMP', /fedramp/i],
+]
+
+function extractLinksFromHtml(html: string): Array<{ href: string }> {
+  const matches = html.match(/<a[^>]+href=["']([^"'#][^"']*)["'][^>]*>/gi) || []
+  return matches.flatMap((tag) => {
+    const m = tag.match(/href=["']([^"']+)["']/i)
+    return m ? [{ href: decodeHtml(m[1]) }] : []
+  })
+}
+
+function parseFooterSignals(html: string): FooterSignals {
+  const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ')
+  const anchors = extractLinksFromHtml(html)
+
+  const yearMatch = text.match(/©\s*(\d{4})/)
+  const copyrightYear = yearMatch?.[1]
+
+  const socialLinks: FooterLink[] = []
+  for (const [name, regex] of SOCIAL_PATTERNS) {
+    const found = anchors.find((a) => regex.test(a.href))
+    if (found) socialLinks.push({ name, url: found.href })
+  }
+
+  const notableLinks: FooterLink[] = []
+  for (const [name, regex] of NOTABLE_PATTERNS) {
+    const found = anchors.find((a) => regex.test(a.href))
+    if (found) notableLinks.push({ name, url: found.href })
+  }
+
+  const certifications = CERT_PATTERNS.filter(([, r]) => r.test(text)).map(([name]) => name)
+
+  const legalMatch = text.match(/\b(inc\.?|s\.a\.s\.?|sarl|ltd\.?|llc|gmbh|b\.v\.?|s\.r\.l\.?)\b/i)
+  const legalForm = legalMatch?.[1]
+
+  const hqMatch = text.match(/(?:headquartered in|headquarters[:\s]+|based in)\s+([A-Z][a-z]+(?:[\s,]+[A-Z][a-z]+)*)/i)
+  const headquarters = hqMatch?.[1]?.trim()
+
+  return { copyrightYear, socialLinks, notableLinks, certifications, legalForm, headquarters }
 }
 
 export async function scrapeWebsite(url: string): Promise<ScrapedData> {
@@ -109,6 +196,8 @@ export async function scrapeWebsite(url: string): Promise<ScrapedData> {
     )
     const favicon = faviconMatch ? faviconMatch[1] : undefined
 
+    const footerSignals = parseFooterSignals(extractFooterHtml(html))
+
     return {
       title,
       description,
@@ -117,6 +206,7 @@ export async function scrapeWebsite(url: string): Promise<ScrapedData> {
       links,
       favicon,
       html: html.substring(0, 50000),
+      footerSignals,
     }
   } catch (error) {
     if (error instanceof AppError) throw error

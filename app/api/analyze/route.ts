@@ -95,6 +95,7 @@ export async function POST(request: NextRequest) {
         analysisSource: llmAnalysis ? 'LLM + heuristics' : 'Heuristics',
         emailProvider: dnsIntel.emailProvider,
         dnsTools: dnsIntel.toolsFromDns,
+        footerSignals: scraped.footerSignals,
         enrichment: {
           found: wikiIntel.found,
           logoUrl: scraped.favicon

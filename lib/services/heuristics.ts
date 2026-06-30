@@ -124,10 +124,13 @@ function estimateCompanyName(scraped: ScrapedData, url: string): string {
   return host.split('.')[0].replace(/^\w/, (letter) => letter.toUpperCase())
 }
 
-function estimateSize(source: string): string {
+function estimateSize(source: string, certifications: string[]): string {
   const normalized = source.toLowerCase()
 
-  if (/enterprise|global|fortune 500|large companies|contact sales/.test(normalized)) {
+  if (
+    /enterprise|global|fortune 500|large companies|contact sales/.test(normalized) ||
+    certifications.some((c) => ['SOC 2', 'ISO 27001', 'FedRAMP', 'HIPAA'].includes(c))
+  ) {
     return 'enterprise'
   }
 
@@ -189,12 +192,15 @@ export function analyzeWebsiteWithHeuristics(
   const gtmSignals = detectByPatterns(fullText, GTM_PATTERNS)
   const techStack = detectTechStack(scraped)
 
+  const { socialLinks, certifications } = scraped.footerSignals
+  const gtmFromFooter = socialLinks.some((l) => l.name === 'LinkedIn') ? ['Présence LinkedIn'] : []
+
   const heuristic: WebsiteAnalysis = {
     companyName: estimateCompanyName(scraped, url),
     industry: industries[0] || 'Unknown',
-    estimatedSize: estimateSize(fullText),
+    estimatedSize: estimateSize(fullText, certifications),
     techStack,
-    gtmSignals,
+    gtmSignals: uniqStrings([...gtmSignals, ...gtmFromFooter]),
     description:
       scraped.description ||
       `Website analysis for ${new URL(url).hostname.replace(/^www\./, '')}.`,

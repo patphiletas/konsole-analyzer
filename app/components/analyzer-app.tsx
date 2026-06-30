@@ -28,6 +28,20 @@ interface Enrichment {
   founded?: string
 }
 
+interface FooterLink {
+  name: string
+  url: string
+}
+
+interface FooterSignals {
+  copyrightYear?: string
+  socialLinks: FooterLink[]
+  notableLinks: FooterLink[]
+  certifications: string[]
+  legalForm?: string
+  headquarters?: string
+}
+
 interface AnalysisResult {
   url: string
   companyName: string
@@ -42,6 +56,7 @@ interface AnalysisResult {
   analysisSource: string
   emailProvider: string
   dnsTools: string[]
+  footerSignals: FooterSignals
   enrichment: Enrichment
   analyzedAt: string
 }
@@ -367,6 +382,72 @@ export default function Home() {
                           {tool}
                         </span>
                       ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {(result.footerSignals.certifications.length > 0 ||
+                result.footerSignals.socialLinks.length > 0 ||
+                result.footerSignals.copyrightYear ||
+                result.footerSignals.legalForm ||
+                result.footerSignals.headquarters) && (
+                <div className="rounded-lg border border-zinc-200 bg-white p-5">
+                  <h3 className="text-lg font-semibold text-zinc-950">Signaux footer</h3>
+                  <dl className="mt-4 grid gap-2 sm:grid-cols-3">
+                    {result.footerSignals.copyrightYear && (
+                      <div className="rounded-md bg-zinc-50 p-3">
+                        <dt className="text-xs text-zinc-500">Actif depuis</dt>
+                        <dd className="mt-0.5 font-medium text-zinc-950">{result.footerSignals.copyrightYear}</dd>
+                      </div>
+                    )}
+                    {result.footerSignals.legalForm && (
+                      <div className="rounded-md bg-zinc-50 p-3">
+                        <dt className="text-xs text-zinc-500">Forme juridique</dt>
+                        <dd className="mt-0.5 font-medium text-zinc-950">{result.footerSignals.legalForm}</dd>
+                      </div>
+                    )}
+                    {result.footerSignals.headquarters && (
+                      <div className="rounded-md bg-zinc-50 p-3">
+                        <dt className="text-xs text-zinc-500">Siège</dt>
+                        <dd className="mt-0.5 font-medium text-zinc-950">{result.footerSignals.headquarters}</dd>
+                      </div>
+                    )}
+                  </dl>
+                  {result.footerSignals.certifications.length > 0 && (
+                    <div className="mt-3">
+                      <p className="text-xs text-zinc-500 mb-2">Certifications</p>
+                      <div className="flex flex-wrap gap-2">
+                        {result.footerSignals.certifications.map((c) => (
+                          <span key={c} className="rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-800">{c}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {result.footerSignals.socialLinks.length > 0 && (
+                    <div className="mt-3">
+                      <p className="text-xs text-zinc-500 mb-2">Réseaux sociaux</p>
+                      <div className="flex flex-wrap gap-2">
+                        {result.footerSignals.socialLinks.map((s) => (
+                          <a key={s.name} href={s.url} target="_blank" rel="noopener noreferrer"
+                            className="rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-800 hover:bg-blue-100">
+                            {s.name}
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {result.footerSignals.notableLinks.length > 0 && (
+                    <div className="mt-3">
+                      <p className="text-xs text-zinc-500 mb-2">Liens utiles</p>
+                      <div className="flex flex-wrap gap-2">
+                        {result.footerSignals.notableLinks.map((l) => (
+                          <a key={l.name} href={l.url} target="_blank" rel="noopener noreferrer"
+                            className="rounded-full bg-zinc-100 px-3 py-1 text-sm font-medium text-zinc-700 hover:bg-zinc-200">
+                            {l.name}
+                          </a>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>

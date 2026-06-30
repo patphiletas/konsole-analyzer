@@ -64,6 +64,16 @@ Le logo affiché en haut de la fiche vient du favicon du site lui-même, extrait
 
 ---
 
+## Fonctionnalité 7 — Signaux footer
+
+> *À utiliser quand on montre la section "Signaux footer"*
+
+Le footer d'un site est souvent négligé, mais il concentre des informations structurées que les équipes juridiques et marketing y déposent intentionnellement. L'application extrait automatiquement la balise `<footer>` et en tire : l'année de copyright (proxy pour l'ancienneté de la boîte), les réseaux sociaux présents (LinkedIn = signal B2B), les certifications affichées (SOC 2, ISO 27001, HIPAA, PCI DSS — signal secteur et maturité), la forme juridique (Inc., SAS, GmbH…) et parfois le siège social.
+
+Ces signaux viennent compléter l'analyse sans aucun appel externe — tout vient du HTML déjà récupéré.
+
+---
+
 ## Architecture — ce qui tourne sous le capot
 
 > *À utiliser pour la partie technique de la vidéo*
