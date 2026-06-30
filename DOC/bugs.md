@@ -91,3 +91,13 @@ Format : symptôme → cause → solution choisie.
 **Cause :** Ajout du champ dans l'interface sans propagation complète sur tous les points de construction de l'objet.
 
 **Solution :** Ajout de `screenshotUrl` dans le fallback `.catch()` de `route.ts` et dans l'objet `enrichment` retourné par la route.
+
+---
+
+## Bug #10 — CI GitHub Actions en échec : `npm ci` / Node 20 déprécié
+
+**Symptôme :** La CI échoue en 8s au step `npm ci` — erreur `EUSAGE: package.json and package-lock.json are not in sync` (packages `@emnapi/runtime` et `@emnapi/core` absents du lock file). Avertissement supplémentaire : Node 20 déprécié sur les runners GitHub.
+
+**Cause :** `package-lock.json` désynchronisé avec `package.json` (dépendances installées localement sans mise à jour du lock file). Node version fixée à 20 dans le workflow alors que GitHub Actions tourne désormais sur Node 24 par défaut.
+
+**Solution :** `npm install` en local pour resynchroniser `package-lock.json`, puis passage à `node-version: 24` dans `.github/workflows/ci.yml`. Commit des deux fichiers.
