@@ -24,11 +24,12 @@ export function createErrorResponse(error: unknown): ApiResponse<null> {
   const appError = handleError(error)
 
   if (error instanceof ZodError) {
+    const firstError = (error as any).errors?.[0]
     return {
       success: false,
       error: {
         type: 'VALIDATION',
-        message: error.errors[0].message,
+        message: firstError?.message || 'Validation error',
       },
       timestamp: new Date().toISOString(),
     }
