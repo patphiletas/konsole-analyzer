@@ -15,6 +15,7 @@
 - [x] **UI** — composant `analyzer-app.tsx`, breakdown score, section DNS (violet), stack avec confiance, données publiques *(enrichissement)*
 - [x] **Dossier DOC** — roadmap, sujet, tests, pitch vidéo *(documentation)*
 - [x] **52 tests Vitest** — 7 fichiers couvrant tous les services (errors, validation, middleware, heuristics, scoring, DNS, wiki) *(qualité)*
+- [x] **CI/CD GitHub Actions** — TypeScript + tests à chaque push/PR sur `main` *(qualité)*
 
 ---
 
