@@ -128,3 +128,4 @@ __tests__/
 ## Support
 
 Besoin d'aide? Check les issues ou crée une PR.
+# konsole-analyzer
