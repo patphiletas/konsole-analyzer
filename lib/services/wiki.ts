@@ -1,3 +1,5 @@
+import { buildFaviconUrl, buildScreenshotUrl } from '../utils'
+
 export interface WikiIntelligence {
   found: boolean
   logoUrl: string
@@ -115,8 +117,8 @@ export async function lookupCompanyWiki(
   companyName: string,
   domain: string,
 ): Promise<WikiIntelligence> {
-  const logoUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`
-  const screenshotUrl = `https://image.thum.io/get/width/1280/crop/800/https://${domain}`
+  const logoUrl = buildFaviconUrl(domain)
+  const screenshotUrl = buildScreenshotUrl(domain)
 
   const title = await searchWikipediaTitle(`${companyName} company`, companyName)
   if (!title) return { found: false, logoUrl, screenshotUrl }

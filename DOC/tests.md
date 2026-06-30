@@ -1,6 +1,6 @@
 # Tests — Kpratik
 
-52 tests Vitest répartis sur 7 fichiers. À mettre à jour à chaque nouvelle feature.
+59 tests Vitest répartis sur 8 fichiers. À mettre à jour à chaque nouvelle feature.
 
 Commande : `npm test`
 
@@ -89,6 +89,20 @@ Commande : `npm test`
 | MX : pas de records | `Unknown` retourné |
 | Résilience : erreur réseau | Catch dans la route, pas de crash |
 | Résilience : NXDOMAIN (Status != 0) | Réponse vide sans erreur |
+
+---
+
+## `__tests__/lib/utils.test.ts` — Utilitaires URL (6 tests)
+
+| Test | Ce qu'il vérifie |
+|---|---|
+| buildFaviconUrl : URL Google favicon | Format correct avec domaine et taille |
+| buildScreenshotUrl : URL Thum.io | Format correct, domaine non encodé |
+| buildScreenshotUrl : pas de `%3A` ni `%2F` | Régression bug #7 (`encodeURIComponent`) |
+| resolveFaviconUrl : favicon absent | Retourne le fallback |
+| resolveFaviconUrl : favicon relatif | Résolu en URL absolue depuis le hostname |
+| resolveFaviconUrl : favicon absolu | Retourné tel quel |
+| resolveFaviconUrl : protocole non http/https | `javascript:` → fallback |
 
 ---
 

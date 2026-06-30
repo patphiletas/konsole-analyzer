@@ -35,7 +35,7 @@ function resolveFaviconUrl(favicon: string, hostname: string, fallback: string):
 
 **Impact :** la route devient plus lisible, la fonction devient testable unitairement.
 
-- [ ] À faire
+- [x] Fait — `lib/utils.ts` : `buildFaviconUrl`, `buildScreenshotUrl`, `resolveFaviconUrl` (+ validation protocole http/https). IIFE supprimée dans `route.ts`. 6 tests dans `__tests__/lib/utils.test.ts`.
 
 ---
 
