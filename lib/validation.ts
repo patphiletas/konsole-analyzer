@@ -32,6 +32,8 @@ export const analyzeResponseSchema = z.object({
   }),
   explanation: z.string(),
   analysisSource: z.string(),
+  emailProvider: z.string(),
+  dnsTools: z.array(z.string()),
   analyzedAt: z.string().datetime(),
 })
 

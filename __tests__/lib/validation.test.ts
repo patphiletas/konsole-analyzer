@@ -68,6 +68,8 @@ describe('Validation', () => {
         },
         explanation: 'High fit',
         analysisSource: 'Heuristics',
+        emailProvider: 'Google Workspace',
+        dnsTools: ['HubSpot', 'Salesforce'],
         analyzedAt: new Date().toISOString(),
       })
       expect(result.success).toBe(true)
