@@ -17,7 +17,7 @@ Chaque point est indépendant. À traiter un par un selon la priorité.
 
 **Impact :** lisibilité, testabilité des sous-composants, facilité d'ajout de features.
 
-- [ ] À faire
+- [x] Fait — `lib/types.ts` + 7 composants extraits (`BreakdownBar`, `ScoreCard`, `CompanyCard`, `EnrichmentCard`, `GtmCard`, `DnsCard`, `FooterCard`, `TechStackCard`). `analyzer-app.tsx` : 574 → 148 lignes.
 
 ---
 
