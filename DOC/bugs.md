@@ -104,6 +104,18 @@ Format : symptôme → cause → solution choisie.
 
 ---
 
+## Bug #12 — Année de copyright footer confondue avec l'année de création *(à corriger)*
+
+**Symptôme :** La carte footer affiche une date comme "2026" qui peut être interprétée comme "l'entreprise existe depuis 2026", alors qu'il s'agit de l'année courante dans la mention `© 2026 Company`.
+
+**Cause :** Le footer contient généralement `© [année courante] Company` — le copyright se met à jour automatiquement chaque année. Ce n'est pas l'année de fondation. Certains footers affichent `© 2010–2026 Company` où le premier chiffre est l'année de lancement réelle.
+
+**Solution partielle appliquée :** Dans `FooterCard.tsx`, le label "Actif depuis" remplacé par "Copyright footer" et la valeur préfixée par "©" — la nature de l'information est maintenant explicite.
+
+**Reste à faire :** Dans `scraper.ts`, chercher le pattern `©\s*(\d{4})\s*[–-]\s*\d{4}` en priorité pour extraire l'année de début quand disponible (ex : `© 2010–2026` → exposer 2010 séparément comme année de lancement).
+
+---
+
 ## Bug #10 — CI GitHub Actions en échec : `npm ci` / Node 20 déprécié
 
 **Symptôme :** La CI échoue en 8s au step `npm ci` — erreur `EUSAGE: package.json and package-lock.json are not in sync` (packages `@emnapi/runtime` et `@emnapi/core` absents du lock file). Avertissement supplémentaire : Node 20 déprécié sur les runners GitHub.
