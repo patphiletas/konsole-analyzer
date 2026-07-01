@@ -94,6 +94,16 @@ Format : symptôme → cause → solution choisie.
 
 ---
 
+## Bug #11 — Données Wikidata toujours périmées (salariés, CA, bénéfice)
+
+**Symptôme :** Les nouveaux champs Wikidata (salariés, chiffre d'affaires, bénéfice) s'affichaient avec des valeurs très anciennes — ex : Salesforce affichait 767 salariés (1999) et $748M de CA (2013) au lieu de 35 000 salariés et $37.9Md.
+
+**Cause :** Wikidata stocke toutes les valeurs historiques d'une propriété dans un tableau chronologique. Le code prenait systématiquement `[0]`, soit la plus ancienne. Pour les propriétés à valeur unique (fondateur, année), ce n'était pas un problème ; pour les propriétés à valeurs multiples dans le temps (effectifs, revenus), `[0]` pointait sur la donnée la plus ancienne.
+
+**Solution :** Introduction de `getBestClaim()` — sélectionne l'entrée de rang `preferred` en priorité (valeur explicitement désignée comme courante dans Wikidata), sinon la dernière entrée non-dépréciée du tableau. Toutes les fonctions d'extraction (`extractEntityId`, `extractYear`, `extractQuantity`, `extractFinancial`) utilisent désormais ce helper.
+
+---
+
 ## Bug #10 — CI GitHub Actions en échec : `npm ci` / Node 20 déprécié
 
 **Symptôme :** La CI échoue en 8s au step `npm ci` — erreur `EUSAGE: package.json and package-lock.json are not in sync` (packages `@emnapi/runtime` et `@emnapi/core` absents du lock file). Avertissement supplémentaire : Node 20 déprécié sur les runners GitHub.
