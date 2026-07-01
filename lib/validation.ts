@@ -55,6 +55,12 @@ export const analyzeResponseSchema = z.object({
     founder: z.string().optional(),
     ceo: z.string().optional(),
     founded: z.string().optional(),
+    employees: z.string().optional(),
+    headquarters: z.string().optional(),
+    stockExchange: z.string().optional(),
+    parentOrg: z.string().optional(),
+    revenue: z.string().optional(),
+    netIncome: z.string().optional(),
   }),
   analyzedAt: z.string().datetime(),
 })

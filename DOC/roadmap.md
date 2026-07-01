@@ -10,6 +10,7 @@
 - [x] **Intelligence DNS** — lookup TXT/MX via Google DoH (sans clé), SPF → 30+ outils détectés (HubSpot, Salesforce, Klaviyo…), MX → provider email *(enrichissement)*
 - [x] **Curseur de confiance sur la stack** — `high` (script src) / `medium` (HTML) / `low` (texte), dots colorés dans l'UI *(enrichissement)*
 - [x] **Enrichissement Wikipedia/Wikidata** — fondateur, CEO, année de création, résumé, lien — filtre anti-faux-positif sur le titre *(enrichissement)*
+- [x] **Données économiques Wikidata** — salariés, siège social, cotation boursière, groupe parent, chiffre d'affaires, bénéfice net — sélection du rang `preferred` ou de la valeur la plus récente *(enrichissement)*
 - [x] **Logo** — favicon scrapé en priorité, Google favicon API en fallback *(enrichissement)*
 - [x] **Screenshot** — aperçu visuel via Thum.io, scrollable dans son cadre, masqué si indisponible *(enrichissement)*
 - [x] **Signaux footer** — extraction `<footer>` : année de copyright, réseaux sociaux, certifications (SOC 2, ISO 27001…), forme juridique, siège social *(enrichissement)*

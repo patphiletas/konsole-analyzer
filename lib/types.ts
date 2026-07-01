@@ -22,6 +22,12 @@ export interface Enrichment {
   founder?: string
   ceo?: string
   founded?: string
+  employees?: string
+  headquarters?: string
+  stockExchange?: string
+  parentOrg?: string
+  revenue?: string
+  netIncome?: string
 }
 
 export interface FooterLink {

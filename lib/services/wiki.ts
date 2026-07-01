@@ -10,6 +10,12 @@ export interface WikiIntelligence {
   founder?: string
   ceo?: string
   founded?: string
+  employees?: string
+  headquarters?: string
+  stockExchange?: string
+  parentOrg?: string
+  revenue?: string
+  netIncome?: string
 }
 
 const TIMEOUT_MS = 5000
@@ -68,20 +74,52 @@ type WikidataClaimValue =
   | { type: 'wikibase-entityid'; value: { id: string } }
   | { type: 'time'; value: { time: string } }
   | { type: 'string'; value: string }
+  | { type: 'quantity'; value: { amount: string; unit: string } }
 
 type WikidataClaims = Record<
   string,
-  Array<{ mainsnak: { datavalue?: WikidataClaimValue } }>
+  Array<{ rank: string; mainsnak: { datavalue?: WikidataClaimValue } }>
 >
 
+function getBestClaim(claims: WikidataClaims, property: string) {
+  const entries = (claims[property] ?? []).filter((e) => e.rank !== 'deprecated')
+  return entries.find((e) => e.rank === 'preferred') ?? entries[entries.length - 1] ?? null
+}
+
 function extractEntityId(claims: WikidataClaims, property: string): string | null {
-  const val = claims[property]?.[0]?.mainsnak?.datavalue
+  const val = getBestClaim(claims, property)?.mainsnak.datavalue
   if (val?.type === 'wikibase-entityid') return val.value.id
   return null
 }
 
+function extractQuantity(claims: WikidataClaims, property: string): string | null {
+  const snak = getBestClaim(claims, property)?.mainsnak.datavalue
+  if (snak?.type !== 'quantity') return null
+  const raw = parseFloat(snak.value.amount)
+  if (isNaN(raw)) return null
+  if (raw >= 1_000_000) return `${(raw / 1_000_000).toFixed(1)} M`
+  if (raw >= 1_000) return `${Math.round(raw / 1_000)} k`
+  return Math.round(raw).toLocaleString('fr-FR')
+}
+
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  Q4917: '$', Q25224: '€', Q4916: '£', Q8374: '¥',
+}
+
+function extractFinancial(claims: WikidataClaims, property: string): string | null {
+  const snak = getBestClaim(claims, property)?.mainsnak.datavalue
+  if (snak?.type !== 'quantity') return null
+  const raw = parseFloat(snak.value.amount)
+  if (isNaN(raw)) return null
+  const unitId = snak.value.unit?.split('/entity/')[1] ?? ''
+  const symbol = CURRENCY_SYMBOLS[unitId] ?? ''
+  if (raw >= 1_000_000_000) return `${symbol}${(raw / 1_000_000_000).toFixed(1)} Md`
+  if (raw >= 1_000_000) return `${symbol}${(raw / 1_000_000).toFixed(0)} M`
+  return `${symbol}${Math.round(raw).toLocaleString('fr-FR')}`
+}
+
 function extractYear(claims: WikidataClaims, property: string): string | null {
-  const val = claims[property]?.[0]?.mainsnak?.datavalue
+  const val = getBestClaim(claims, property)?.mainsnak.datavalue
   if (val?.type === 'time') {
     const match = val.value.time.match(/\+(\d{4})/)
     return match?.[1] ?? null
@@ -146,15 +184,28 @@ export async function lookupCompanyWiki(
 
   const founderId = extractEntityId(claims, 'P112')
   const ceoId = extractEntityId(claims, 'P169')
+  const headquartersId = extractEntityId(claims, 'P159')
+  const stockExchangeId = extractEntityId(claims, 'P414')
+  const parentOrgId = extractEntityId(claims, 'P127')
   const founded = extractYear(claims, 'P571')
+  const employees = extractQuantity(claims, 'P1128')
+  const revenue = extractFinancial(claims, 'P2139')
+  const netIncome = extractFinancial(claims, 'P2295')
 
   if (founded) result.founded = founded
+  if (employees) result.employees = employees
+  if (revenue) result.revenue = revenue
+  if (netIncome) result.netIncome = netIncome
 
-  const entityIds = [founderId, ceoId].filter((id): id is string => id !== null)
+  const entityIds = [founderId, ceoId, headquartersId, stockExchangeId, parentOrgId]
+    .filter((id): id is string => id !== null)
   const labels = await fetchWikidataLabels(entityIds)
 
   if (founderId && labels[founderId]) result.founder = labels[founderId]
   if (ceoId && labels[ceoId]) result.ceo = labels[ceoId]
+  if (headquartersId && labels[headquartersId]) result.headquarters = labels[headquartersId]
+  if (stockExchangeId && labels[stockExchangeId]) result.stockExchange = labels[stockExchangeId]
+  if (parentOrgId && labels[parentOrgId]) result.parentOrg = labels[parentOrgId]
 
   return result
 }

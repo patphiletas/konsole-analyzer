@@ -1,6 +1,6 @@
 # Tests — Kpratik
 
-59 tests Vitest répartis sur 8 fichiers. À mettre à jour à chaque nouvelle feature.
+60 tests Vitest répartis sur 8 fichiers. À mettre à jour à chaque nouvelle feature.
 
 Commande : `npm test`
 
@@ -106,7 +106,7 @@ Commande : `npm test`
 
 ---
 
-## `__tests__/services/wiki.test.ts` — Enrichissement Wikipedia/Wikidata (7 tests)
+## `__tests__/services/wiki.test.ts` — Enrichissement Wikipedia/Wikidata (8 tests)
 
 | Test | Ce qu'il vérifie |
 |---|---|
@@ -116,4 +116,5 @@ Commande : `npm test`
 | Données complètes Wikipedia + Wikidata | Fondateur, CEO, année extraits et labellisés |
 | Troncature du résumé | Résumé limité à 400 caractères |
 | Erreur réseau | Retour propre `{ found: false, logoUrl }` sans exception |
+| Données économiques Wikidata | Salariés (rang `preferred`), siège, cotation, groupe parent, CA et bénéfice (dernière valeur `normal`) |
 | Extraction année avec précision mois | `+2015-03-01T...` → `"2015"` |

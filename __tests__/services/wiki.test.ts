@@ -11,9 +11,36 @@ const WIKIDATA_CLAIMS = {
   entities: {
     Q1283921: {
       claims: {
-        P112: [{ mainsnak: { datavalue: { type: 'wikibase-entityid', value: { id: 'Q100' } } } }],
-        P169: [{ mainsnak: { datavalue: { type: 'wikibase-entityid', value: { id: 'Q101' } } } }],
-        P571: [{ mainsnak: { datavalue: { type: 'time', value: { time: '+2010-09-01T00:00:00Z' } } } }],
+        P112: [{ rank: 'normal', mainsnak: { datavalue: { type: 'wikibase-entityid', value: { id: 'Q100' } } } }],
+        P169: [{ rank: 'normal', mainsnak: { datavalue: { type: 'wikibase-entityid', value: { id: 'Q101' } } } }],
+        P571: [{ rank: 'normal', mainsnak: { datavalue: { type: 'time', value: { time: '+2010-09-01T00:00:00Z' } } } }],
+      },
+    },
+  },
+}
+
+const WIKIDATA_CLAIMS_FULL = {
+  entities: {
+    Q999: {
+      claims: {
+        P112: [{ rank: 'normal', mainsnak: { datavalue: { type: 'wikibase-entityid', value: { id: 'Q200' } } } }],
+        P169: [{ rank: 'normal', mainsnak: { datavalue: { type: 'wikibase-entityid', value: { id: 'Q201' } } } }],
+        P571: [{ rank: 'normal', mainsnak: { datavalue: { type: 'time', value: { time: '+2006-01-01T00:00:00Z' } } } }],
+        P1128: [
+          { rank: 'normal',    mainsnak: { datavalue: { type: 'quantity', value: { amount: '+767', unit: '1' } } } },
+          { rank: 'preferred', mainsnak: { datavalue: { type: 'quantity', value: { amount: '+80000', unit: '1' } } } },
+        ],
+        P159: [{ rank: 'normal', mainsnak: { datavalue: { type: 'wikibase-entityid', value: { id: 'Q202' } } } }],
+        P414: [{ rank: 'normal', mainsnak: { datavalue: { type: 'wikibase-entityid', value: { id: 'Q203' } } } }],
+        P127: [{ rank: 'normal', mainsnak: { datavalue: { type: 'wikibase-entityid', value: { id: 'Q204' } } } }],
+        P2139: [
+          { rank: 'normal', mainsnak: { datavalue: { type: 'quantity', value: { amount: '+748700000', unit: 'http://www.wikidata.org/entity/Q4917' } } } },
+          { rank: 'normal', mainsnak: { datavalue: { type: 'quantity', value: { amount: '+32000000000', unit: 'http://www.wikidata.org/entity/Q4917' } } } },
+        ],
+        P2295: [
+          { rank: 'normal', mainsnak: { datavalue: { type: 'quantity', value: { amount: '+18356000', unit: 'http://www.wikidata.org/entity/Q4917' } } } },
+          { rank: 'normal', mainsnak: { datavalue: { type: 'quantity', value: { amount: '+8500000000', unit: 'http://www.wikidata.org/entity/Q4917' } } } },
+        ],
       },
     },
   },
@@ -23,6 +50,16 @@ const WIKIDATA_LABELS = {
   entities: {
     Q100: { labels: { en: { value: 'Patrick Collison' }, fr: { value: 'Patrick Collison' } } },
     Q101: { labels: { en: { value: 'Patrick Collison' } } },
+  },
+}
+
+const WIKIDATA_LABELS_FULL = {
+  entities: {
+    Q200: { labels: { en: { value: 'Jack Dorsey' } } },
+    Q201: { labels: { en: { value: 'John CEO' } } },
+    Q202: { labels: { fr: { value: 'San Francisco' } } },
+    Q203: { labels: { en: { value: 'NASDAQ' } } },
+    Q204: { labels: { en: { value: 'Meta Platforms' } } },
   },
 }
 
@@ -115,6 +152,27 @@ describe('lookupCompanyWiki', () => {
     const result = await lookupCompanyWiki('Stripe', 'stripe.com')
     expect(result.found).toBe(false)
     expect(result.logoUrl).toBe('https://www.google.com/s2/favicons?domain=stripe.com&sz=128')
+  })
+
+  it('extrait salariés, siège, cotation, groupe parent, CA et bénéfice depuis Wikidata', async () => {
+    vi.stubGlobal(
+      'fetch',
+      buildMockFetch({
+        'list=search': { query: { search: [{ title: 'Acme Corp' }] } },
+        'rest_v1/page/summary': SUMMARY_RESPONSE,
+        'prop=pageprops': { query: { pages: { '1': { pageprops: { wikibase_item: 'Q999' } } } } },
+        'wbgetentities&ids=Q999': WIKIDATA_CLAIMS_FULL,
+        'wbgetentities&ids=Q200': WIKIDATA_LABELS_FULL,
+      }),
+    )
+    const result = await lookupCompanyWiki('Acme', 'acme.com')
+    expect(result.found).toBe(true)
+    expect(result.employees).toBe('80 k')
+    expect(result.headquarters).toBe('San Francisco')
+    expect(result.stockExchange).toBe('NASDAQ')
+    expect(result.parentOrg).toBe('Meta Platforms')
+    expect(result.revenue).toBe('$32.0 Md')
+    expect(result.netIncome).toBe('$8.5 Md')
   })
 
   it('extrait l\'année depuis un timestamp Wikidata avec précision mois', async () => {

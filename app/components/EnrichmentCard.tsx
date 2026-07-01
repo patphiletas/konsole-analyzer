@@ -33,6 +33,42 @@ export function EnrichmentCard({ enrichment }: { enrichment: Enrichment }) {
             <dd className="mt-0.5 font-medium text-zinc-950">{enrichment.ceo}</dd>
           </div>
         )}
+        {enrichment.employees && (
+          <div className="rounded-md bg-zinc-50 p-3">
+            <dt className="text-xs text-zinc-500">Salariés</dt>
+            <dd className="mt-0.5 font-medium text-zinc-950">{enrichment.employees}</dd>
+          </div>
+        )}
+        {enrichment.headquarters && (
+          <div className="rounded-md bg-zinc-50 p-3">
+            <dt className="text-xs text-zinc-500">Siège social</dt>
+            <dd className="mt-0.5 font-medium text-zinc-950">{enrichment.headquarters}</dd>
+          </div>
+        )}
+        {enrichment.stockExchange && (
+          <div className="rounded-md bg-zinc-50 p-3">
+            <dt className="text-xs text-zinc-500">Cotation</dt>
+            <dd className="mt-0.5 font-medium text-zinc-950">{enrichment.stockExchange}</dd>
+          </div>
+        )}
+        {enrichment.parentOrg && (
+          <div className="rounded-md bg-zinc-50 p-3">
+            <dt className="text-xs text-zinc-500">Groupe parent</dt>
+            <dd className="mt-0.5 font-medium text-zinc-950">{enrichment.parentOrg}</dd>
+          </div>
+        )}
+        {enrichment.revenue && (
+          <div className="rounded-md bg-zinc-50 p-3">
+            <dt className="text-xs text-zinc-500">Chiffre d'affaires</dt>
+            <dd className="mt-0.5 font-medium text-zinc-950">{enrichment.revenue}</dd>
+          </div>
+        )}
+        {enrichment.netIncome && (
+          <div className="rounded-md bg-zinc-50 p-3">
+            <dt className="text-xs text-zinc-500">Bénéfice net</dt>
+            <dd className="mt-0.5 font-medium text-zinc-950">{enrichment.netIncome}</dd>
+          </div>
+        )}
       </dl>
       {enrichment.summary && (
         <p className="mt-4 text-sm leading-6 text-zinc-600">{enrichment.summary}</p>
