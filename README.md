@@ -1,49 +1,84 @@
 # Kpratik
 
-Application web MVP pour analyser le site public d'une entreprise et produire des insights utiles à une équipe Revenue Engineering : description, secteur, taille estimée, stack technique, signaux GTM et score de fit SaaS B2B.
+Application web d'intelligence commerciale B2B : analyse le site public d'une entreprise et produit des insights actionnables pour une équipe Revenue Engineering — stack technique, signaux GTM, données publiques enrichies et score de fit SaaS B2B /100.
 
 Application déployée : https://kpratik.vercel.app/
 
+---
+
 ## Fonctionnalités
 
-- Analyse d'une URL unique, avec ou sans protocole (`stripe.com` ou `https://stripe.com`).
-- Scraping serveur des données publiques : title, meta description, keywords, scripts et liens.
-- Détection heuristique de stack technique : Next.js, React, HubSpot, Stripe, Segment, Shopify, WordPress, etc.
-- Détection de signaux GTM : pricing, demo, free trial, docs, API, blog, case studies, intégrations.
-- Analyse DNS (TXT/MX) via Google DoH : outils marketing/sales depuis le SPF record, provider email depuis les MX.
-- Scoring automatique sur 100 pour évaluer le fit d'une entreprise SaaS B2B.
-- Explication du score obtenu avec le détail taille, secteur, stack et signaux GTM.
-- Fallback 100% gratuit : l'application fonctionne sans clé API externe.
-- Enrichissement optionnel par LLM via OpenRouter si `OPENROUTER_API_KEY` est configurée.
-- UI responsive orientée usage sales/marketing, avec détail du score et preuves détectées.
+### Analyse sans clé API (coût zéro)
+- Scraping serveur de la page d'accueil : title, meta description, keywords, scripts, liens, favicon.
+- Détection heuristique de 20+ technologies (Next.js, React, HubSpot, Stripe, Segment, Shopify, Cloudflare…) avec niveau de confiance : **Confirmé** (script src) / **Probable** (HTML) / **Indicatif** (texte).
+- Détection de 10 signaux GTM : pricing, demo, free trial, docs, API, blog, case studies, intégrations, newsletter, PLG signup.
+- Intelligence DNS via Google DoH (sans clé) : 30+ outils marketing/sales depuis le SPF record, provider email depuis les MX records.
+- Signaux footer : année de copyright, réseaux sociaux (avec URL), certifications (SOC 2, ISO 27001, GDPR…), forme juridique, siège social.
+- Logo : favicon scrapé en priorité, Google Favicons API en fallback.
+- Screenshot : aperçu visuel via Thum.io, scrollable dans son cadre.
+- Score de fit SaaS B2B /100 avec explication textuelle et breakdown par dimension.
+
+### Enrichissement Wikipedia / Wikidata (gratuit)
+- Recherche automatique de la page Wikipedia de l'entreprise avec filtre anti-faux-positif.
+- Résumé (400 car. max), fondateur, CEO, année de création, lien Wikipedia.
+- Données économiques Wikidata : nombre de salariés, siège social, cotation boursière, groupe parent, chiffre d'affaires, bénéfice net — valeur la plus récente (rang `preferred` ou dernière entrée).
+
+### Intelligence commerciale IA (optionnel)
+Activé si `GROQ_API_KEY` ou `OPENROUTER_API_KEY` est configurée. Groq (Llama 3.3 70B) est le primaire, OpenRouter `:free` est le fallback automatique.
+
+Champs extraits par le LLM, impossibles à obtenir par regex :
+- **Segment cible** : startup / SMB / mid-market / enterprise
+- **Modèle de vente** : PLG / SLG / hybrid
+- **Persona principal** : developer / RevOps / IT / finance / marketing…
+- **Signaux de traction** : chiffres quantifiés ("10 000+ customers", "processing $1B+")
+- **Concurrents mentionnés** : alternatives citées sur le site
+- **Signaux de financement** : YC, Series A/B, investisseurs
+
+---
 
 ## Stack technique
 
-- Next.js 16 App Router + React 19 : frontend et API dans le même projet, simple à déployer sur Vercel.
-- TypeScript : typage des contrats d'analyse et des services.
-- Tailwind CSS 4 : itération rapide sur une UI propre et responsive.
-- Zod 4 : validation de payload API.
-- Vitest : tests unitaires sur validation, erreurs, scoring et heuristiques.
+- **Next.js 16 App Router + React 19** — frontend et API serverless dans le même projet, déployé sur Vercel
+- **TypeScript** — typage strict des contrats d'analyse et des services
+- **Tailwind CSS 4** — UI responsive orientée usage sales/marketing
+- **Zod 4** — validation des payloads API
+- **Vitest** — 60 tests unitaires sur tous les services
+
+---
 
 ## Architecture
 
-```txt
-app/
-  api/analyze/route.ts      Endpoint d'analyse
-  api/analytics/route.ts    Stats simples in-memory
-  page.tsx                  Interface principale
-  dashboard/page.tsx        Vue stats technique
-lib/
-  services/scraper.ts       Fetch HTML + extraction title/meta/scripts/links
-  services/heuristics.ts    Analyse locale sans API payante
-  services/dns.ts           Lookup TXT/MX via Google DoH (outils SPF, provider email)
-  services/llm.ts           Enrichissement OpenRouter optionnel
-  services/scoring.ts       Score SaaS B2B et explication
-  validation.ts             Schémas Zod
-  api-middleware.ts         Format de réponse API
-  errors.ts                 Erreurs applicatives
-__tests__/                  Tests Vitest
 ```
+app/
+  api/analyze/route.ts        Endpoint principal — orchestre tous les services
+  components/
+    analyzer-app.tsx          Shell UI (state, form, composition des cartes)
+    CompanyCard.tsx            Nom, secteur, taille, logo, source d'analyse
+    EnrichmentCard.tsx         Données Wikipedia/Wikidata
+    LLMIntelCard.tsx           Intelligence commerciale IA
+    ScoreCard.tsx              Score /100, breakdown, explication
+    TechStackCard.tsx          Stack avec dots de confiance
+    GtmCard.tsx                Signaux GTM
+    DnsCard.tsx                Provider email + outils DNS
+    FooterCard.tsx             Signaux footer
+lib/
+  services/
+    scraper.ts                Fetch HTML + extraction title/meta/scripts/links/footer
+    heuristics.ts             Analyse locale — stack, GTM, secteur, taille
+    dns.ts                    Lookup TXT/MX via Google DoH
+    wiki.ts                   Enrichissement Wikipedia + Wikidata
+    llm.ts                    Groq (primaire) + OpenRouter :free (fallback)
+    scoring.ts                Score SaaS B2B et explication textuelle
+  types.ts                    Interfaces TypeScript partagées
+  utils.ts                    buildFaviconUrl, buildScreenshotUrl, resolveFaviconUrl
+  validation.ts               Schémas Zod
+  api-middleware.ts           Format de réponse API unifié
+  errors.ts                   Erreurs applicatives typées
+__tests__/                    60 tests Vitest (8 fichiers)
+.github/workflows/ci.yml      CI : TypeScript + tests à chaque push/PR
+```
+
+---
 
 ## Lancement local
 
@@ -54,113 +89,97 @@ npm run dev
 
 Ouvrir `http://localhost:3000`.
 
+---
+
 ## Variables d'environnement
 
-L'app fonctionne sans variable obligatoire.
-
-Pour activer l'enrichissement LLM optionnel :
+L'application fonctionne sans aucune variable obligatoire.
 
 ```bash
-OPENROUTER_API_KEY=your_openrouter_key
+# Enrichissement LLM (optionnel) — un seul suffit
+GROQ_API_KEY=gsk_...           # groq.com — gratuit, Llama 3.3 70B (primaire)
+OPENROUTER_API_KEY=sk-or-...   # openrouter.ai — fallback sur modèle :free
 ```
 
-Sans cette clé, le endpoint utilise uniquement l'analyse heuristique locale.
+Sans ces clés, l'app utilise uniquement les heuristiques locales et Wikidata — l'expérience reste complète et fonctionnelle.
+
+---
 
 ## Tests et build
 
 ```bash
-npm test
-npm run build
+npm test        # 60 tests Vitest
+npm run build   # build production Next.js
 ```
 
-État actuel :
-
-- `npm test` : 45 tests passent.
-- `npm run build` : build production Next.js OK.
+---
 
 ## Signaux analysés
 
-Ce tableau recense ce que l'application cherche à détecter et comment elle le fait. À mettre à jour à chaque nouveau signal ou source ajoutée.
+| Ce qu'on cherche | Source | Comment |
+|---|---|---|
+| Nom de la boîte | HTML | Balise `<title>` — partie avant le `\|` ou `-` |
+| Description | HTML | `<meta name="description">` ou `og:description` |
+| Secteur | HTML (heuristiques) | Regex sur title, meta, liens — ex. `saas\|workflow\|crm` |
+| Taille estimée | HTML (heuristiques) | Regex — `enterprise\|fortune 500` / `series [abcde]` |
+| Stack technique | HTML (heuristiques) | 3 niveaux de confiance selon la source (script src / HTML / texte) |
+| Signaux GTM | HTML (heuristiques) | Pricing, demo, free trial, docs, blog, case studies… |
+| Outils marketing/sales | DNS SPF | `include:hubspot.com` → HubSpot (30+ outils mappés) |
+| Provider email | DNS MX | `aspmx.l.google.com` → Google Workspace |
+| Réseaux sociaux | Footer HTML | Extraction sur `href` — retourne le nom + l'URL |
+| Certifications | Footer HTML | SOC 2, ISO 27001, GDPR, HIPAA, PCI DSS, FedRAMP |
+| Fondateur / CEO / Année | Wikidata | Claims P112, P169, P571 — rang `preferred` ou dernière valeur |
+| Salariés / CA / Bénéfice | Wikidata | Claims P1128, P2139, P2295 — rang `preferred` ou dernière valeur |
+| Siège social / Cotation | Wikidata | Claims P159, P414 → labels FR/EN |
+| Screenshot | Thum.io | URL directe, pas de clé requise |
+| Logo | Favicon scrapé + Google Favicons API | Fallback si absent ou protocole invalide |
+| Segment / Persona / Modèle | LLM (optionnel) | Groq Llama 3.3 70B ou OpenRouter :free |
+| Traction / Concurrents / Financement | LLM (optionnel) | Extraction depuis le HTML complet |
 
-| Ce qu'on cherche | Comment on le trouve |
-|---|---|
-| **Nom de la boîte** | Balise `<title>` — partie avant le `\|` ou `-` |
-| **Description** | `<meta name="description">` ou `<meta property="og:description">` |
-| **Secteur** | Regex sur title, meta, liens et HTML — ex. `saas\|workflow\|crm` → SaaS |
-| **Taille estimée** | Regex sur le texte — ex. `enterprise\|fortune 500` → Enterprise, `series [abcde]` → Scale-up |
-| **Stack technique** | Trois niveaux de confiance : **Confirmé** (trouvé dans un `<script src>`) / **Probable** (dans le HTML) / **Indicatif** (mentionné dans le texte) |
-| **Pricing page** | Regex liens + texte — `pricing\|plans\|tarifs` |
-| **Demo booking** | Regex — `demo\|book a call\|contact sales` |
-| **Free trial** | Regex — `free trial\|start free\|try for free` |
-| **Sign up / PLG** | Regex — `sign up\|get started\|create account` |
-| **Docs / API** | Regex — `docs\|documentation\|api reference` |
-| **Blog / Content** | Regex — `blog\|resources\|guides\|academy` |
-| **Case studies** | Regex — `case stud\|customers\|success stor` |
-| **Intégrations** | Regex — `integration\|marketplace\|apps` |
-| **Outils marketing/sales** | DNS TXT (SPF) via Google DoH — `include:hubspot.com` → HubSpot, `include:salesforce.com` → Salesforce, etc. (30+ outils mappés) |
-| **Provider email** | DNS MX via Google DoH — ex. `aspmx.l.google.com` → Google Workspace, `protection.outlook.com` → Microsoft 365 |
-
-Sources utilisées : **HTML public** (scraping), **DNS** (Google DoH, sans clé). Le **LLM** (OpenRouter) est optionnel et enrichit les champs companyName, description, industry, estimatedSize si une clé est configurée.
+---
 
 ## Logique de scoring
 
-Le score est pensé pour une entreprise qui vend à des SaaS B2B :
+Score pensé pour une entreprise qui vend à des SaaS B2B :
 
-- Taille estimée : jusqu'à 30 points.
-- Secteur : jusqu'à 30 points.
-- Stack technique : jusqu'à 25 points.
-- Signaux GTM : jusqu'à 20 points.
+| Dimension | Points max | Signal fort |
+|---|---|---|
+| Taille estimée | 30 | Scale-up ou enterprise |
+| Secteur | 30 | SaaS, fintech, martech |
+| Stack technique | 25 | React, Stripe, Segment, HubSpot |
+| Signaux GTM | 20 | Pricing + demo + free trial |
 
-Le total est borné à 100. L'objectif n'est pas de donner une vérité absolue, mais un premier tri actionnable pour prioriser des comptes.
+Total plafonné à 100. Niveaux : **excellent fit** (≥75) / **bon fit** (≥55) / **compte à qualifier** (≥35) / **fit faible**.
 
-L'explication affichée reprend le total, les points obtenus par catégorie et les indices qui ont influencé la note : secteur détecté, taille estimée, technologies observées et signaux GTM visibles.
+---
 
 ## Choix techniques
 
-J'ai privilégié un MVP robuste et testable plutôt qu'une dépendance forte à une API d'enrichissement. Les APIs type Clearbit/Hunter peuvent être puissantes, mais elles ajoutent vite des limites de quota, de coût ou de disponibilité. Ici, le scraping public donne déjà des signaux utiles et l'app reste testable live à coût zéro.
+Priorité à un MVP robuste sans dépendance critique à des APIs payantes. Les heuristiques locales + Wikidata (gratuit) + DNS public donnent déjà des signaux utiles à coût zéro. Le LLM est une couche optionnelle qui enrichit sans bloquer si la clé est absente.
 
-Le LLM est branché comme couche optionnelle : si une clé OpenRouter existe, il enrichit le résultat ; sinon l'expérience produit reste fonctionnelle. C'est volontaire pour éviter le cas "demo qui plante parce qu'une clé manque".
+La décomposition en 8 composants UI (vs un god component) et en services indépendants facilite les tests et l'évolution feature par feature.
+
+---
 
 ## Limites actuelles
 
-- Analyse uniquement la page d'accueil et ses liens visibles, pas un crawl complet.
-- Les estimations de taille restent heuristiques.
-- Pas de cache persistant ni historique utilisateur.
-- Certaines stacks masquées par CDN ou bundling ne sont pas détectables depuis le HTML public.
-- Pas encore de screenshots, d'analyse LinkedIn ou d'enrichissement domaine/email.
+- Analyse uniquement la page d'accueil — pas de crawl multi-pages.
+- Les estimations heuristiques (taille, secteur) restent approximatives.
+- Pas de cache persistant : chaque analyse re-scrappe le site.
+- Certaines stacks masquées par CDN ou bundling ne sont pas détectables.
+- Wikidata est bien couvert pour les grandes entreprises cotées, moins pour les SaaS early-stage.
 
-## Améliorations avec plus de temps
-
-- Crawl contrôlé sur quelques pages clés : `/pricing`, `/customers`, `/docs`, `/about`.
-- Cache par domaine avec revalidation pour accélérer les démos et réduire les fetchs externes.
-- Batch CSV pour analyser une liste de comptes.
-- Score configurable selon l'ICP de l'utilisateur.
-- Export CRM ou webhook vers HubSpot/Salesforce.
-- Ajout d'un mode "evidence" avec extraits exacts justifiant chaque signal.
-
-## Intégration dans Konsole
-
-Dans un produit comme Konsole, ce module pourrait devenir une brique d'enrichissement compte :
-
-- au moment de l'import d'un compte dans une liste cible ;
-- dans une vue "account intelligence" pour aider les SDR/AE à prioriser ;
-- comme signal de routing pour lancer des plays GTM différents selon le score ;
-- comme source d'explication pour personnaliser les messages outbound.
+---
 
 ## Déploiement
 
-Le projet est compatible Vercel.
+Compatible Vercel (serverless, `maxDuration: 20s` sur le endpoint d'analyse).
 
-URL de production actuelle : https://kpratik.vercel.app/
-
-1. Pousser le repo sur GitHub.
-2. Importer le repo dans Vercel.
-3. Ajouter `OPENROUTER_API_KEY` seulement si l'enrichissement LLM est souhaité.
-4. Deploy.
-
-Commande locale de vérification avant deploy :
-
-```bash
-npm test
-npm run build
 ```
+1. Pousser le repo sur GitHub
+2. Importer dans Vercel
+3. Ajouter GROQ_API_KEY (optionnel) dans les variables d'environnement Vercel
+4. Deploy
+```
+
+URL de production : https://kpratik.vercel.app/
