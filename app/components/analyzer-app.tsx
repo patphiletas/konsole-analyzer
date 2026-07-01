@@ -9,6 +9,7 @@ import { DnsCard } from './DnsCard'
 import { FooterCard } from './FooterCard'
 import { TechStackCard } from './TechStackCard'
 import { ScoreCard } from './ScoreCard'
+import { LLMIntelCard } from './LLMIntelCard'
 
 const examples = ['stripe.com', 'hubspot.com', 'linear.app']
 
@@ -150,6 +151,7 @@ export default function Home() {
               <GtmCard gtmSignals={result.gtmSignals} />
               <DnsCard emailProvider={result.emailProvider} dnsTools={result.dnsTools} />
               <FooterCard footerSignals={result.footerSignals} />
+              {result.llmIntel && <LLMIntelCard llmIntel={result.llmIntel} />}
               <TechStackCard techStack={result.techStack} />
             </div>
 

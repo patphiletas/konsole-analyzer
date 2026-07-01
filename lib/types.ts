@@ -44,6 +44,15 @@ export interface FooterSignals {
   headquarters?: string
 }
 
+export interface LLMIntel {
+  targetSegment?: string
+  salesModel?: string
+  targetPersona?: string
+  tractionSignals?: string[]
+  competitors?: string[]
+  fundingSignals?: string[]
+}
+
 export interface AnalysisResult {
   url: string
   companyName: string
@@ -60,5 +69,6 @@ export interface AnalysisResult {
   dnsTools: string[]
   footerSignals: FooterSignals
   enrichment: Enrichment
+  llmIntel?: LLMIntel
   analyzedAt: string
 }

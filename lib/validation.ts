@@ -62,6 +62,14 @@ export const analyzeResponseSchema = z.object({
     revenue: z.string().optional(),
     netIncome: z.string().optional(),
   }),
+  llmIntel: z.object({
+    targetSegment: z.string().optional(),
+    salesModel: z.string().optional(),
+    targetPersona: z.string().optional(),
+    tractionSignals: z.array(z.string()).optional(),
+    competitors: z.array(z.string()).optional(),
+    fundingSignals: z.array(z.string()).optional(),
+  }).optional(),
   analyzedAt: z.string().datetime(),
 })
 

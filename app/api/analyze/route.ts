@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
       })),
     ])
 
-    const llmEnabled = Boolean(process.env.OPENROUTER_API_KEY)
+    const llmEnabled = Boolean(process.env.GROQ_API_KEY || process.env.OPENROUTER_API_KEY)
     const llmAnalysis = llmEnabled
       ? await analyzeWebsiteWithLLM(
           scraped.html,
@@ -93,10 +93,20 @@ export async function POST(request: NextRequest) {
           gtm: breakdown.gtmScore,
         },
         explanation: generateExplanation(breakdown, scoringInput),
-        analysisSource: llmAnalysis ? 'LLM + heuristics' : 'Heuristics',
+        analysisSource: llmAnalysis
+          ? process.env.GROQ_API_KEY ? 'Groq + heuristics' : 'LLM + heuristics'
+          : 'Heuristics',
         emailProvider: dnsIntel.emailProvider,
         dnsTools: dnsIntel.toolsFromDns,
         footerSignals: scraped.footerSignals,
+        llmIntel: llmAnalysis ? {
+          targetSegment: llmAnalysis.targetSegment,
+          salesModel: llmAnalysis.salesModel,
+          targetPersona: llmAnalysis.targetPersona,
+          tractionSignals: llmAnalysis.tractionSignals,
+          competitors: llmAnalysis.competitors,
+          fundingSignals: llmAnalysis.fundingSignals,
+        } : undefined,
         enrichment: {
           found: wikiIntel.found,
           logoUrl: resolveFaviconUrl(scraped.favicon, hostname, wikiIntel.logoUrl),
