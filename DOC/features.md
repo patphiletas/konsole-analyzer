@@ -303,20 +303,29 @@ function scoreLevel(score: number): string {
 
 ## 9. Enrichissement LLM (optionnel)
 
-**Ce que ça fait :** Si la variable d'environnement `OPENROUTER_API_KEY` est présente, envoie le HTML scrapé à un LLM (GPT-3.5-turbo via OpenRouter) pour enrichir la détection de secteur, taille et stack. L'app fonctionne sans cette clé (heuristiques locales utilisées à la place).
+**Ce que ça fait :** Si `GROQ_API_KEY` ou `OPENROUTER_API_KEY` est présente, envoie le HTML scrapé à un LLM pour enrichir la détection et extraire des signaux commerciaux impossibles à obtenir par regex. Groq (Llama 3.3 70B) est le primaire, OpenRouter `:free` est le fallback automatique. L'app fonctionne sans aucune clé (heuristiques locales).
+
+**Nouveaux champs extraits par le LLM :** segment cible, modèle de vente (PLG/SLG/hybrid), persona, signaux de traction quantifiés, concurrents mentionnés, signaux de financement.
 
 **Fichier :** `lib/services/llm.ts` · `app/api/analyze/route.ts`
 
 ```typescript
-// Dans route.ts — activation conditionnelle
-const llmEnabled = Boolean(process.env.OPENROUTER_API_KEY)
-const llmAnalysis = llmEnabled
-  ? await analyzeWebsiteWithLLM(scraped.html, scraped.title, scraped.description, scraped.scripts)
-      .catch(() => undefined)
-  : undefined
+// Groq en primaire, OpenRouter :free en fallback
+async function callLLM(prompt: string): Promise<string> {
+  if (process.env.GROQ_API_KEY) {
+    try {
+      return await callGroq(prompt)       // Llama 3.3 70B
+    } catch (err) {
+      if (!process.env.OPENROUTER_API_KEY) throw err
+      return await callOpenRouter(prompt) // fallback :free
+    }
+  }
+  if (process.env.OPENROUTER_API_KEY) return await callOpenRouter(prompt)
+  throw new AppError(ErrorType.INTERNAL_ERROR, 'No LLM API key configured', 500)
+}
 
-const analysis = analyzeWebsiteWithHeuristics(scraped, url, llmAnalysis)
-// llmAnalysis enrichit les heuristiques si présent, sinon elles tournent seules
+// Dans route.ts — activation conditionnelle
+const llmEnabled = Boolean(process.env.GROQ_API_KEY || process.env.OPENROUTER_API_KEY)
 ```
 
 ---
