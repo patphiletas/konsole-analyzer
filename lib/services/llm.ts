@@ -134,12 +134,7 @@ async function callOpenRouter(prompt: string): Promise<string> {
 
 async function callLLM(prompt: string): Promise<string> {
   if (process.env.GROQ_API_KEY) {
-    try {
-      return await callGroq(prompt)
-    } catch (err) {
-      if (!process.env.OPENROUTER_API_KEY) throw err
-      return await callOpenRouter(prompt)
-    }
+    return await callGroq(prompt)
   }
   if (process.env.OPENROUTER_API_KEY) {
     return await callOpenRouter(prompt)

@@ -124,6 +124,22 @@ Format : symptôme → cause → solution choisie.
 
 ---
 
+## Bug #15 — Onglet "Analyse IA" absent sans avertissement *(à corriger)*
+
+**Symptôme :** L'onglet "Analyse IA" disparaît sur tous les sites analysés sans message d'erreur. L'analysisSource passe à "Heuristiques" — seul indice visible.
+
+**Cause identifiée :** double échec —
+- **Groq** : limite free tier atteinte (100 000 tokens/jour). Reset automatique à J+1. En dev intensif, la limite peut être atteinte en une journée de tests.
+- **OpenRouter fallback** : le modèle `llama-3.1-8b-instruct:free` n'est plus gratuit. Le fallback ne sert plus à rien.
+
+**Correctifs appliqués :**
+- Fallback OpenRouter supprimé (`callLLM` utilise Groq si dispo, OpenRouter sinon — plus de cascade)
+- `callOpenRouter` conservé dans le code au cas où un nouveau modèle gratuit apparaît
+
+**Reste à faire :** indicateur UI discret quand le LLM est en échec (badge ou tooltip sur "Heuristiques"), plutôt que la disparition silencieuse de l'onglet.
+
+---
+
 ## Bug #14 — Meta description tronquée en mode heuristique seul
 
 **Symptôme :** En l'absence de clé LLM (mode `Heuristiques`), la description affichée dans la fiche entreprise est la meta description brute du site. Celle-ci peut être coupée en plein mot (ex : `"…des dirigeants d"`) à cause d'un attribut HTML mal échappé ou d'une limite de caractères imposée par le CMS du site analysé.
