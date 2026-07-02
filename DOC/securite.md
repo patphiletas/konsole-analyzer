@@ -204,11 +204,11 @@ const html = new TextDecoder().decode(Buffer.concat(chunks))
 | Priorité | Risque | Mesure | Statut |
 |---|---|---|---|
 | Haute | S6 — Rate limiting absent | Middleware Vercel ou upstash/ratelimit | À faire |
-| Haute | S7 — SSRF possible | Valider IP publique avant fetch | À faire |
-| Haute | S8 — PII dans appels LLM | `scrubHtmlForLlm()` avant envoi | À faire |
-| Haute | S12 — Prompt injection | Délimiteurs dans le prompt + validation output | À faire |
-| Haute | S13 — Output LLM non validé | Schéma Zod sur la réponse LLM | À faire |
-| Haute | S14 — Body HTTP non borné | Lecture par chunks avec limite 500 KB | À faire |
+| Haute | S7 — SSRF possible | Valider IP publique avant fetch | ✅ Fait |
+| Haute | S8 — PII dans appels LLM | `scrubHtmlForLlm()` avant envoi | ✅ Fait |
+| Haute | S12 — Prompt injection | Délimiteurs dans le prompt + validation output | ✅ Fait |
+| Haute | S13 — Output LLM non validé | Schéma Zod sur la réponse LLM | ✅ Fait |
+| Haute | S14 — Body HTTP non borné | Lecture par chunks avec limite 500 KB | ✅ Fait |
 | Moyenne | S9 — Headers HTTP | `next.config.ts` — section `headers` | À faire |
 | Moyenne | S10 — Pas de CSP | CSP dans `next.config.ts` | Backlog |
 | Basse | S11 — Audit dépendances | `npm audit` dans CI | À faire |

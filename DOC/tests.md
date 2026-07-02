@@ -1,6 +1,6 @@
 # Tests — Kpratik
 
-65 tests Vitest répartis sur 8 fichiers. À mettre à jour à chaque nouvelle feature.
+86 tests Vitest répartis sur 10 fichiers. À mettre à jour à chaque nouvelle feature.
 
 Commande : `npm test`
 
@@ -108,6 +108,41 @@ Commande : `npm test`
 | resolveFaviconUrl : favicon relatif | Résolu en URL absolue depuis le hostname |
 | resolveFaviconUrl : favicon absolu | Retourné tel quel |
 | resolveFaviconUrl : protocole non http/https | `javascript:` → fallback |
+
+---
+
+## `__tests__/services/scraper.test.ts` — Sécurité scraper S7 + S14 (15 tests)
+
+| Test | Ce qu'il vérifie |
+|---|---|
+| `127.0.0.1` → privé | Loopback IPv4 détecté |
+| `10.0.0.1` → privé | Plage RFC1918 10/8 |
+| `192.168.1.1` → privé | Plage RFC1918 192.168/16 |
+| `172.16.0.1` → privé | Plage RFC1918 172.16–31/12 (borne basse) |
+| `172.31.255.255` → privé | Plage RFC1918 172.16–31/12 (borne haute) |
+| `169.254.169.254` → privé | Metadata AWS/GCP (link-local) |
+| `::1` → privé | Loopback IPv6 |
+| `fc00::1` → privé | ULA IPv6 (fc::/7) |
+| `93.184.216.34` → public | IP publique (example.com) — non bloquée |
+| `172.32.0.1` → public | Hors plage 172.16–31, donc public |
+| S7 : bloque `localhost` | `scrapeWebsite('http://localhost/admin')` → `INVALID_URL` |
+| S7 : bloque `0.0.0.0` | `scrapeWebsite('http://0.0.0.0/')` → `INVALID_URL` |
+| S7 : bloque `::1` IPv6 | `scrapeWebsite('http://[::1]/')` → `INVALID_URL` |
+| S14 : contenu sous la limite | Réponse < 500 KB retournée intacte |
+| S14 : body > 500 KB tronqué | `result.html.length ≤ 500 000` même si le body fait 600 KB |
+
+---
+
+## `__tests__/services/llm.test.ts` — Scrubbing HTML S8 (6 tests)
+
+| Test | Ce qu'il vérifie |
+|---|---|
+| Suppression des commentaires HTML | `<!-- secret token -->` absent de la sortie |
+| Suppression des scripts inline | `<script>var key="sk-123"</script>` retiré |
+| Rédaction des emails | `john.doe@company.com` → `[email]` |
+| Rédaction des numéros de téléphone | `+33 1 23 45 67 89` → `[phone]` |
+| Troncature à 5 000 caractères | Input 10 000 chars → sortie ≤ 5 000 chars |
+| Préservation du texte marketing | `"The best CRM for sales teams"` conservé |
 
 ---
 
