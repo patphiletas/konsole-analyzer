@@ -54,17 +54,17 @@ const HIGH_VALUE_INDUSTRIES = [
 ]
 
 const HIGH_VALUE_GTM = [
-  'pricing page',
-  'free trial',
-  'demo booking',
+  'page de tarifs',
+  'essai gratuit',
+  'réservation démo',
+  'inscription produit',
   'newsletter',
-  'blog',
+  'blog / ressources',
+  'études de cas',
   'documentation',
+  'intégrations',
+  'api / webhooks',
   'webinar',
-  'case study',
-  'integration',
-  'api documentation',
-  'rest api',
   'webhook',
 ]
 
@@ -120,10 +120,10 @@ export function calculateFitScore(input: ScoringInput): ScoreBreakdown {
 }
 
 function scoreLevel(score: number): string {
-  if (score >= 75) return 'excellent fit'
-  if (score >= 55) return 'bon fit'
+  if (score >= 75) return 'profil excellent'
+  if (score >= 55) return 'bon profil'
   if (score >= 35) return 'compte à qualifier'
-  return 'fit faible'
+  return 'profil faible'
 }
 
 function formatList(values: string[], fallback: string): string {

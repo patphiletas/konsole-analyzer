@@ -20,6 +20,9 @@ jobs:
 
       - run: npm ci
 
+      - name: Audit dépendances
+        run: npm audit --audit-level=high
+
       - name: TypeScript
         run: npx tsc --noEmit
 

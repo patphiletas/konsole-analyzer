@@ -88,30 +88,37 @@ function scrubHtmlForLlm(html: string): string {
 }
 ```
 
-### S9 — Headers de sécurité HTTP
+### S9 — Headers de sécurité HTTP (implémenté)
 
-Vercel ajoute automatiquement certains headers, mais il est recommandé de configurer explicitement dans `next.config.ts` :
+Configurés dans `next.config.ts` pour toutes les routes (`/(.*)`). Headers appliqués sur chaque réponse :
 
-```typescript
-headers: [
-  { key: 'X-Content-Type-Options', value: 'nosniff' },
-  { key: 'X-Frame-Options', value: 'DENY' },
-  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
-]
+| Header | Valeur | Rôle |
+|---|---|---|
+| `X-Content-Type-Options` | `nosniff` | Bloque le MIME sniffing |
+| `X-Frame-Options` | `DENY` | Prévient le clickjacking |
+| `X-DNS-Prefetch-Control` | `on` | Optimise DNS sans risque |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` | Limite les infos envoyées aux tiers |
+| `Permissions-Policy` | `camera=(), microphone=(), geolocation=()` | Désactive les APIs navigateur inutilisées |
+
+### S10 — Content Security Policy (implémenté)
+
+CSP configurée dans `next.config.ts`. Next.js App Router exige `unsafe-inline` pour les scripts (hydration côté client) et les styles (Tailwind), donc la CSP est restrictive mais pas stricte au sens nonce-based.
+
+```
+default-src 'self'
+script-src 'self' 'unsafe-inline'
+style-src 'self' 'unsafe-inline'
+img-src 'self' data: https:
+connect-src 'self'
+font-src 'self'
+frame-ancestors 'none'
 ```
 
-### S10 — Content Security Policy (CSP)
+`img-src https:` couvre les favicons Google, screenshots thum.io et thumbnails Wikipedia. `frame-ancestors 'none'` remplace et renforce `X-Frame-Options` pour les navigateurs modernes.
 
-Pas de CSP configurée. Une CSP stricte limiterait l'impact d'une éventuelle injection XSS dans les données affichées (nom d'entreprise, description scrapée).
+### S11 — Dépendances tierces (implémenté)
 
-**Risque concret :** `result.companyName` ou `result.description` pourrait contenir du HTML si le scraping est détourné. Les composants React échappent automatiquement les chaînes, mais une CSP ajoute une couche de défense.
-
-### S11 — Dépendances tierces
-
-Aucun audit de dépendances automatisé en CI. `npm audit` doit être lancé régulièrement.
-
-**Mesure recommandée :** ajouter `npm audit --audit-level=high` dans le workflow CI (`.github/workflows/ci.yml`).
+`npm audit --audit-level=high` ajouté dans `.github/workflows/ci.yml`, avant les étapes TypeScript et tests. Bloque le CI si une vulnérabilité de sévérité `high` ou `critical` est détectée dans les dépendances directes ou transitives.
 
 ### S12 — Prompt injection (priorité haute)
 
@@ -207,9 +214,9 @@ const html = new TextDecoder().decode(Buffer.concat(chunks))
 | Haute | S12 — Prompt injection | Délimiteurs dans le prompt + validation output | ✅ Fait |
 | Haute | S13 — Output LLM non validé | Schéma Zod sur la réponse LLM | ✅ Fait |
 | Haute | S14 — Body HTTP non borné | Lecture par chunks avec limite 500 KB | ✅ Fait |
-| Moyenne | S9 — Headers HTTP | `next.config.ts` — section `headers` | À faire |
-| Moyenne | S10 — Pas de CSP | CSP dans `next.config.ts` | Backlog |
-| Basse | S11 — Audit dépendances | `npm audit` dans CI | À faire |
+| Moyenne | S9 — Headers HTTP | `next.config.ts` — section `headers` | ✅ Fait |
+| Moyenne | S10 — Pas de CSP | CSP dans `next.config.ts` | ✅ Fait |
+| Basse | S11 — Audit dépendances | `npm audit` dans CI | ✅ Fait |
 
 ---
 

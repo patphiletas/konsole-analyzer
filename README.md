@@ -54,7 +54,7 @@ Activée si une clé API est configurée. L'IA lit le site et en déduit des inf
 - **TypeScript** — typage strict des contrats de données et des services
 - **Tailwind CSS 4** — interface responsive orientée usage commercial
 - **Zod 4** — validation des données échangées avec l'API
-- **Vitest** — 60 tests unitaires couvrant tous les services
+- **Vitest** — 88 tests unitaires couvrant tous les services
 
 ---
 
@@ -86,8 +86,9 @@ lib/
   validation.ts               Schémas de validation Zod
   api-middleware.ts           Format de réponse API unifié
   errors.ts                   Gestion des erreurs applicatives
-__tests__/                    60 tests Vitest (8 fichiers)
-.github/workflows/ci.yml      Intégration continue : typage + tests à chaque push
+  ratelimit.ts                Rate limiting Upstash (10 req/60s par IP)
+__tests__/                    88 tests Vitest (11 fichiers)
+.github/workflows/ci.yml      Intégration continue : audit, typage + tests à chaque push
 ```
 
 ---
@@ -109,18 +110,22 @@ L'application fonctionne sans aucune variable obligatoire.
 
 ```bash
 # Analyse par IA (optionnel) — une seule clé suffit
-GROQ_API_KEY=gsk_...           # groq.com — gratuit, Llama 3.3 70B (recommandé)
-OPENROUTER_API_KEY=sk-or-...   # openrouter.ai — fallback automatique si Groq échoue
+GROQ_API_KEY=gsk_...                          # groq.com — gratuit, Llama 3.3 70B (recommandé)
+OPENROUTER_API_KEY=sk-or-...                  # openrouter.ai — fallback automatique si Groq échoue
+
+# Rate limiting (optionnel) — console.upstash.com, tier gratuit
+UPSTASH_REDIS_REST_URL=https://...            # URL REST de la base Upstash
+UPSTASH_REDIS_REST_TOKEN=...                  # Token d'accès Upstash
 ```
 
-Sans ces clés, l'application utilise uniquement les heuristiques locales et Wikidata. L'expérience reste complète et fonctionnelle.
+Sans ces clés, l'application fonctionne entièrement : heuristiques locales + Wikipedia/Wikidata, sans LLM ni rate limiting. Le rate limiting est recommandé en production pour protéger le quota LLM.
 
 ---
 
 ## Tests et build
 
 ```bash
-npm test        # 60 tests
+npm test        # 88 tests
 npm run build   # build production
 ```
 

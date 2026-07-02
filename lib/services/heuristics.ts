@@ -54,16 +54,16 @@ const INDUSTRY_PATTERNS: PatternEntry[] = [
 ]
 
 const GTM_PATTERNS: PatternEntry[] = [
-  { name: 'Pricing page', regex: /pricing|plans|tarifs/i },
-  { name: 'Demo booking', regex: /demo|book.?a.?call|contact.?sales|talk.?to.?sales/i },
-  { name: 'Free trial', regex: /free.?trial|start.?free|try.?for.?free/i },
-  { name: 'Product-led signup', regex: /sign.?up|get.?started|create.?account/i },
-  { name: 'Documentation', regex: /docs|documentation|developers|api reference/i },
-  { name: 'API / Webhooks', regex: /api|webhook|sdk|developers/i },
-  { name: 'Blog / Resources', regex: /blog|resources|guides|learn|academy/i },
-  { name: 'Case studies', regex: /case.?stud|customers|success.?stor/i },
-  { name: 'Intégrations', regex: /integration|marketplace|apps/i },
-  { name: 'Newsletter capture', regex: /newsletter|subscribe/i },
+  { name: 'Page de tarifs',    regex: /pricing|plans|tarifs/i },
+  { name: 'Réservation démo',  regex: /demo|book.?a.?call|contact.?sales|talk.?to.?sales/i },
+  { name: 'Essai gratuit',     regex: /free.?trial|start.?free|try.?for.?free/i },
+  { name: 'Inscription produit', regex: /sign.?up|get.?started|create.?account/i },
+  { name: 'Documentation',     regex: /docs|documentation|developers|api reference/i },
+  { name: 'API / Webhooks',    regex: /api|webhook|sdk|developers/i },
+  { name: 'Blog / Ressources', regex: /blog|resources|guides|learn|academy/i },
+  { name: 'Études de cas',     regex: /case.?stud|customers|success.?stor/i },
+  { name: 'Intégrations',      regex: /integration|marketplace|apps/i },
+  { name: 'Newsletter',        regex: /newsletter|subscribe/i },
 ]
 
 function uniqStrings(values: string[]): string[] {
@@ -171,7 +171,14 @@ function mergeAnalyses(
         ? llmAnalysis.estimatedSize
         : heuristic.estimatedSize,
     techStack: uniqTechSignals([...heuristic.techStack, ...llmTechSignals]),
-    gtmSignals: uniqStrings([...llmAnalysis.gtmSignals, ...heuristic.gtmSignals]),
+    gtmSignals: uniqStrings([
+      ...llmAnalysis.gtmSignals,
+      // ignore les signaux heuristiques dont le pattern couvre déjà un signal LLM
+      ...heuristic.gtmSignals.filter((name) => {
+        const pattern = GTM_PATTERNS.find((p) => p.name === name)
+        return !pattern || !llmAnalysis.gtmSignals.some((s) => pattern.regex.test(s))
+      }),
+    ]),
     description: llmAnalysis.description || heuristic.description,
   }
 }

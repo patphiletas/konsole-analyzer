@@ -35,7 +35,7 @@ export default function Home() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error?.message || 'Analysis failed')
+        throw new Error(data.error?.message || 'Analyse échouée')
       }
 
       setResult(data.data)
@@ -52,7 +52,7 @@ export default function Home() {
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-8 lg:grid-cols-[1fr_380px] lg:px-8">
           <div className="flex flex-col justify-center">
             <p className="text-sm font-semibold uppercase tracking-wide text-blue-700">
-              Revenue engineering intelligence
+              Intelligence commerciale B2B
             </p>
             <h1 className="mt-3 max-w-3xl text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl">
               Kpratik
@@ -120,7 +120,7 @@ export default function Home() {
         {!loading && !result && !error && (
           <div className="grid gap-4 lg:grid-cols-3">
             {[
-              ['1', 'Scraping', 'Title, metas, scripts et liens publics.'],
+              ['1', 'Scraping', 'Titre, métas, scripts et liens publics.'],
               ['2', 'Classification', 'Secteur, taille, stack et signaux GTM.'],
               ['3', 'Scoring', 'Score SaaS B2B expliqué et actionnable.'],
             ].map(([step, title, copy]) => (

@@ -109,8 +109,8 @@ export async function POST(request: NextRequest) {
         },
         explanation: generateExplanation(breakdown, scoringInput),
         analysisSource: llmAnalysis
-          ? process.env.GROQ_API_KEY ? 'Groq + heuristics' : 'LLM + heuristics'
-          : 'Heuristics',
+          ? process.env.GROQ_API_KEY ? 'Groq + heuristiques' : 'LLM + heuristiques'
+          : 'Heuristiques',
         emailProvider: dnsIntel.emailProvider,
         dnsTools: dnsIntel.toolsFromDns,
         footerSignals: scraped.footerSignals,

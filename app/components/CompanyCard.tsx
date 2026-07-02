@@ -1,5 +1,16 @@
 import type { Enrichment } from '@/lib/types'
 
+const SIZE_FR: Record<string, string> = {
+  enterprise:      'Grands comptes',
+  'scale-up':      'Scale-up',
+  'startup / smb': 'Startup / PME',
+  startup:         'Startup',
+}
+
+function displaySize(size: string): string {
+  return SIZE_FR[size.toLowerCase()] ?? size
+}
+
 export function CompanyCard({ companyName, url, description, industry, estimatedSize, enrichment, analysisSource }: {
   companyName: string
   url: string
@@ -33,11 +44,11 @@ export function CompanyCard({ companyName, url, description, industry, estimated
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
           <div className="rounded-md bg-zinc-50 p-4">
             <p className="text-sm text-zinc-500">Secteur</p>
-            <p className="mt-1 font-medium text-zinc-950">{industry}</p>
+            <p className="mt-1 font-medium text-zinc-950">{industry === 'Unknown' ? '—' : industry}</p>
           </div>
           <div className="rounded-md bg-zinc-50 p-4">
             <p className="text-sm text-zinc-500">Taille estimée</p>
-            <p className="mt-1 font-medium text-zinc-950">{estimatedSize}</p>
+            <p className="mt-1 font-medium text-zinc-950">{displaySize(estimatedSize)}</p>
           </div>
         </div>
       </div>

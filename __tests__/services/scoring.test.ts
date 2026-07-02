@@ -81,7 +81,7 @@ describe('Scoring', () => {
       estimatedSize: 'scale-up',
       industry: 'SaaS / Software',
       techStack: ['Next.js', 'Stripe'],
-      gtmSignals: ['Pricing page', 'Demo booking'],
+      gtmSignals: ['Page de tarifs', 'Réservation démo'],
     }
     const breakdown = calculateFitScore(input)
 
@@ -90,7 +90,7 @@ describe('Scoring', () => {
     expect(explanation).toContain(`Score ${breakdown.fitScore}/100`)
     expect(explanation).toContain('secteur détecté: SaaS / Software')
     expect(explanation).toContain('stack observée: Next.js, Stripe')
-    expect(explanation).toContain('signaux GTM: Pricing page, Demo booking')
+    expect(explanation).toContain('signaux GTM: Page de tarifs, Réservation démo')
   })
 
   it('should cap score at 100', () => {

@@ -114,6 +114,16 @@ Format : symptôme → cause → solution choisie.
 
 ---
 
+## Bug #13 — Signaux GTM en doublon (LLM anglais + heuristiques français)
+
+**Symptôme :** Avec le LLM activé, un même signal GTM peut apparaître deux fois dans l'UI : en anglais depuis le LLM (`"Pricing page"`) et en français depuis les heuristiques (`"Page de tarifs"`), représentant exactement le même signal.
+
+**Cause :** La fusion dans `mergeAnalyses()` utilise `uniqStrings()` qui déduplique par string exacte. Depuis le passage des noms GTM en français dans `heuristics.ts` (Bug introduit lors de i18n), les chaînes LLM (anglais) et heuristiques (français) ne sont plus identiques → les deux passent.
+
+**Solution :** Avant la fusion, filtrer les signaux heuristiques dont le pattern regex matche déjà le texte d'un signal LLM. Si le LLM a détecté le même concept (même si avec un libellé différent), le signal heuristique est ignoré.
+
+---
+
 ## Bug #12 — Année de copyright footer confondue avec l'année de création *(à corriger)*
 
 **Symptôme :** La carte footer affiche une date comme "2026" qui peut être interprétée comme "l'entreprise existe depuis 2026", alors qu'il s'agit de l'année courante dans la mention `© 2026 Company`.

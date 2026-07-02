@@ -65,7 +65,7 @@ describe('Heuristic website analysis', () => {
       ]),
     )
     expect(analysis.gtmSignals).toEqual(
-      expect.arrayContaining(['Pricing page', 'Demo booking', 'Free trial']),
+      expect.arrayContaining(['Page de tarifs', 'Réservation démo', 'Essai gratuit']),
     )
   })
 })
