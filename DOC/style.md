@@ -35,11 +35,12 @@ Les labels de l'UI mélangent les deux langues (ex: "Tech Stack", "GTM Signals" 
 
 ## Ordre d'implémentation recommandé
 
-1. **Langue** — transversal, sans risque de régression visuelle, à faire en premier
-2. **Layout 2 colonnes** — changement de perception le plus fort, même sans toucher au contenu ; l'œil descend actuellement sur 8 cartes en cascade, c'est long
-3. **Texte du score** — remplacer le paragraphe généré par 3–4 bullet points scannables ; implique un changement de logique dans `scoring.ts`, pas juste du CSS
-4. **Graphique de breakdown** — barres de progression colorées préférables au radar chart sur 4 axes seulement (radar beau mais peu lisible sur mobile et peu différenciant avec si peu d'axes)
-5. **Logo** — afficher l'identité visuelle de l'entreprise en grand donnerait un effet "fiche compte" professionnel fort ; cosmétique mais psychologiquement impactant pour un outil sales
+1. **Langue** — transversal, sans risque de régression visuelle ✅ fait
+2. **Layout 2 colonnes** — le layout était déjà 2 colonnes (`lg:grid-cols-[1fr_360px]`) ; le vrai problème était les 7 cartes empilées dans la colonne gauche ✅ résolu par les onglets
+3. **Onglets dans la colonne gauche** — `CompanyCard` toujours visible, puis 4 onglets : Stack technique / Signaux / Données publiques / Analyse IA (masqué sans LLM). Réinitialisation à "Stack" à chaque nouvelle analyse ✅ fait
+4. **Texte du score** — remplacer le paragraphe généré par 3–4 bullet points scannables ; implique un changement de logique dans `scoring.ts`, pas juste du CSS
+5. **Graphique de breakdown** — barres de progression colorées préférables au radar chart sur 4 axes seulement (radar beau mais peu lisible sur mobile et peu différenciant avec si peu d'axes)
+6. **Logo** — afficher l'identité visuelle de l'entreprise en grand donnerait un effet "fiche compte" professionnel fort ; cosmétique mais psychologiquement impactant pour un outil sales
 
 ---
 

@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import type { AnalysisResult } from '@/lib/types'
+
+type Tab = 'stack' | 'signaux' | 'donnees' | 'ia'
 import { CompanyCard } from './CompanyCard'
 import { EnrichmentCard } from './EnrichmentCard'
 import { GtmCard } from './GtmCard'
@@ -18,12 +20,14 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<AnalysisResult | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<Tab>('stack')
 
-  async function handleAnalyze(e: React.FormEvent) {
+  async function handleAnalyze(e: { preventDefault(): void }) {
     e.preventDefault()
     setLoading(true)
     setError(null)
     setResult(null)
+    setActiveTab('stack')
 
     try {
       const response = await fetch('/api/analyze', {
@@ -135,36 +139,91 @@ export default function Home() {
           </div>
         )}
 
-        {result && (
-          <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
-            <div className="space-y-5">
-              <CompanyCard
-                companyName={result.companyName}
-                url={result.url}
-                description={result.description}
-                industry={result.industry}
-                estimatedSize={result.estimatedSize}
-                enrichment={result.enrichment}
-                analysisSource={result.analysisSource}
-              />
-              <EnrichmentCard enrichment={result.enrichment} />
-              <GtmCard gtmSignals={result.gtmSignals} />
-              <DnsCard emailProvider={result.emailProvider} dnsTools={result.dnsTools} />
-              <FooterCard footerSignals={result.footerSignals} />
-              {result.llmIntel && <LLMIntelCard llmIntel={result.llmIntel} />}
-              <TechStackCard techStack={result.techStack} />
-            </div>
+        {result && (() => {
+          const { footerSignals, enrichment } = result
+          const hasPublicData =
+            enrichment.found ||
+            footerSignals.certifications.length > 0 ||
+            footerSignals.socialLinks.length > 0 ||
+            footerSignals.notableLinks.length > 0 ||
+            !!footerSignals.copyrightYear ||
+            !!footerSignals.legalForm ||
+            !!footerSignals.headquarters
 
-            <aside className="space-y-5">
-              <ScoreCard
-                fitScore={result.fitScore}
-                explanation={result.explanation}
-                scoreBreakdown={result.scoreBreakdown}
-                analyzedAt={result.analyzedAt}
-              />
-            </aside>
-          </div>
-        )}
+          const tabs: Array<{ id: Tab; label: string }> = [
+            { id: 'stack',   label: 'Stack technique'  },
+            { id: 'signaux', label: 'Signaux'           },
+            ...(hasPublicData ? [{ id: 'donnees' as Tab, label: 'Données publiques' }] : []),
+            ...(result.llmIntel ? [{ id: 'ia' as Tab, label: 'Analyse IA' }] : []),
+          ]
+
+          return (
+            <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
+              <div className="space-y-5">
+                <CompanyCard
+                  companyName={result.companyName}
+                  url={result.url}
+                  description={result.description}
+                  industry={result.industry}
+                  estimatedSize={result.estimatedSize}
+                  enrichment={result.enrichment}
+                  analysisSource={result.analysisSource}
+                />
+
+                <div>
+                  <div className="border-b border-zinc-200">
+                    <nav className="-mb-px flex">
+                      {tabs.map((tab) => (
+                        <button
+                          key={tab.id}
+                          type="button"
+                          onClick={() => setActiveTab(tab.id)}
+                          className={`px-4 py-3 text-sm font-medium border-b-2 transition ${
+                            activeTab === tab.id
+                              ? 'border-blue-600 text-blue-700'
+                              : 'border-transparent text-zinc-500 hover:text-zinc-800'
+                          }`}
+                        >
+                          {tab.label}
+                        </button>
+                      ))}
+                    </nav>
+                  </div>
+
+                  <div className="mt-5 space-y-5">
+                    {activeTab === 'stack' && (
+                      <TechStackCard techStack={result.techStack} />
+                    )}
+                    {activeTab === 'signaux' && (
+                      <>
+                        <GtmCard gtmSignals={result.gtmSignals} />
+                        <DnsCard emailProvider={result.emailProvider} dnsTools={result.dnsTools} />
+                      </>
+                    )}
+                    {activeTab === 'donnees' && (
+                      <>
+                        <EnrichmentCard enrichment={result.enrichment} />
+                        <FooterCard footerSignals={result.footerSignals} />
+                      </>
+                    )}
+                    {activeTab === 'ia' && result.llmIntel && (
+                      <LLMIntelCard llmIntel={result.llmIntel} />
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <aside className="space-y-5">
+                <ScoreCard
+                  fitScore={result.fitScore}
+                  explanation={result.explanation}
+                  scoreBreakdown={result.scoreBreakdown}
+                  analyzedAt={result.analyzedAt}
+                />
+              </aside>
+            </div>
+          )
+        })()}
       </section>
     </main>
   )
