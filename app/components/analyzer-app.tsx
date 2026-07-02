@@ -13,7 +13,7 @@ import { TechStackCard } from './TechStackCard'
 import { ScoreCard } from './ScoreCard'
 import { LLMIntelCard } from './LLMIntelCard'
 
-const examples = ['stripe.com', 'hubspot.com', 'linear.app']
+const DEFAULT_EXAMPLES = ['stripe.com', 'hubspot.com', 'linear.app']
 
 export default function Home() {
   const [url, setUrl] = useState('')
@@ -21,6 +21,7 @@ export default function Home() {
   const [result, setResult] = useState<AnalysisResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<Tab>('stack')
+  const [examples, setExamples] = useState<string[]>(DEFAULT_EXAMPLES)
 
   async function handleAnalyze(e: { preventDefault(): void }) {
     e.preventDefault()
@@ -43,6 +44,8 @@ export default function Home() {
       }
 
       setResult(data.data)
+      const hostname = url.replace(/^https?:\/\//, '').replace(/\/.*$/, '').replace(/^www\./, '')
+      setExamples(prev => [hostname, ...prev.filter(u => u !== hostname)].slice(0, 3))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur inconnue')
     } finally {
@@ -95,8 +98,9 @@ export default function Home() {
                 <button
                   key={example}
                   type="button"
+                  title={example}
                   onClick={() => setUrl(example)}
-                  className="rounded-full border border-zinc-300 px-3 py-1 text-sm text-zinc-600 transition hover:border-zinc-500 hover:text-zinc-950"
+                  className="max-w-40 truncate rounded-full border border-zinc-300 px-3 py-1 text-sm text-zinc-600 transition hover:border-zinc-500 hover:text-zinc-950"
                 >
                   {example}
                 </button>

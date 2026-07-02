@@ -89,15 +89,14 @@ export function ScoreCard({
             ))}
           </ul>
         )}
-      </div>
-
-      <div className="rounded-lg border border-zinc-200 bg-white p-5">
-        <h3 className="text-lg font-semibold text-zinc-950">Détail du score</h3>
-        <div className="mt-5 space-y-4">
-          <BreakdownBar label="Taille" value={scoreBreakdown.size} max={30} />
-          <BreakdownBar label="Secteur" value={scoreBreakdown.industry} max={30} />
-          <BreakdownBar label="Stack" value={scoreBreakdown.techStack} max={25} />
-          <BreakdownBar label="Signaux GTM" value={scoreBreakdown.gtm} max={20} />
+        <div className="mt-5 border-t border-zinc-100 pt-4">
+          <p className="text-xs font-medium text-zinc-400 uppercase tracking-wide">Détails du score</p>
+          <div className="mt-3 space-y-3">
+            <BreakdownBar label="Taille" value={scoreBreakdown.size} max={30} />
+            <BreakdownBar label="Secteur" value={scoreBreakdown.industry} max={30} />
+            <BreakdownBar label="Stack" value={scoreBreakdown.techStack} max={25} />
+            <BreakdownBar label="Signaux GTM" value={scoreBreakdown.gtm} max={20} />
+          </div>
         </div>
       </div>
 
