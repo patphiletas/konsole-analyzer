@@ -45,7 +45,13 @@ export function FooterCard({ footerSignals }: { footerSignals: FooterSignals }) 
     <div className="rounded-lg border border-zinc-200 bg-white p-5">
       <h3 className="text-lg font-semibold text-zinc-950">Signaux footer</h3>
       <dl className="mt-4 grid gap-2 sm:grid-cols-3">
-        {footerSignals.copyrightYear && (
+        {footerSignals.foundedYear && (
+          <div className="rounded-md bg-zinc-50 p-3">
+            <dt className="text-xs text-zinc-500">En activité depuis</dt>
+            <dd className="mt-0.5 font-medium text-zinc-950">{footerSignals.foundedYear}</dd>
+          </div>
+        )}
+        {footerSignals.copyrightYear && !footerSignals.foundedYear && (
           <div className="rounded-md bg-zinc-50 p-3">
             <dt className="text-xs text-zinc-500">Copyright footer</dt>
             <dd className="mt-0.5 font-medium text-zinc-950">© {footerSignals.copyrightYear}</dd>

@@ -7,6 +7,7 @@ export interface FooterLink {
 
 export interface FooterSignals {
   copyrightYear?: string
+  foundedYear?: string
   socialLinks: FooterLink[]
   notableLinks: FooterLink[]
   certifications: string[]
@@ -109,8 +110,10 @@ function parseFooterSignals(html: string): FooterSignals {
   const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ')
   const anchors = extractLinksFromHtml(html)
 
-  const yearMatch = text.match(/©\s*(\d{4})/)
-  const copyrightYear = yearMatch?.[1]
+  const rangeMatch = text.match(/©\s*(\d{4})\s*[–\-]\s*(\d{4})/)
+  const singleMatch = !rangeMatch ? text.match(/©\s*(\d{4})/) : null
+  const foundedYear    = rangeMatch?.[1]
+  const copyrightYear  = rangeMatch ? rangeMatch[2] : singleMatch?.[1]
 
   const socialLinks: FooterLink[] = []
   for (const [name, regex] of SOCIAL_PATTERNS) {
@@ -132,7 +135,7 @@ function parseFooterSignals(html: string): FooterSignals {
   const hqMatch = text.match(/(?:headquartered in|headquarters[:\s]+|based in)\s+([A-Z][a-z]+(?:[\s,]+[A-Z][a-z]+)*)/i)
   const headquarters = hqMatch?.[1]?.trim()
 
-  return { copyrightYear, socialLinks, notableLinks, certifications, legalForm, headquarters }
+  return { copyrightYear, foundedYear, socialLinks, notableLinks, certifications, legalForm, headquarters }
 }
 
 export async function scrapeWebsite(url: string): Promise<ScrapedData> {

@@ -37,6 +37,7 @@ export interface FooterLink {
 
 export interface FooterSignals {
   copyrightYear?: string
+  foundedYear?: string
   socialLinks: FooterLink[]
   notableLinks: FooterLink[]
   certifications: string[]

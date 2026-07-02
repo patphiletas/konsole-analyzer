@@ -39,6 +39,7 @@ export const analyzeResponseSchema = z.object({
   dnsTools: z.array(z.string()),
   footerSignals: z.object({
     copyrightYear: z.string().optional(),
+    foundedYear: z.string().optional(),
     socialLinks: z.array(z.object({ name: z.string(), url: z.string() })),
     notableLinks: z.array(z.object({ name: z.string(), url: z.string() })),
     certifications: z.array(z.string()),
