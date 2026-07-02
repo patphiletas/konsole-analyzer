@@ -1,5 +1,38 @@
 import { describe, expect, it } from 'vitest'
-import { analyzeWebsiteWithHeuristics } from '@/lib/services/heuristics'
+import { analyzeWebsiteWithHeuristics, estimateCompanyName } from '@/lib/services/heuristics'
+
+const makeScraped = (title: string) => ({
+  title,
+  description: '',
+  keywords: [],
+  scripts: [],
+  links: [],
+  html: '',
+  footerSignals: { socialLinks: [], notableLinks: [], certifications: [] },
+})
+
+describe('estimateCompanyName', () => {
+  it('extrait le nom avant le séparateur pipe', () => {
+    expect(estimateCompanyName(makeScraped('Stripe | Financial Infrastructure'), 'https://stripe.com'))
+      .toBe('Stripe')
+  })
+  it('extrait le nom avant le tiret', () => {
+    expect(estimateCompanyName(makeScraped('Linear – Plan and build great products'), 'https://linear.app'))
+      .toBe('Linear')
+  })
+  it('extrait le nom avant les deux-points', () => {
+    expect(estimateCompanyName(makeScraped('HubSpot: CRM, Marketing & Sales Software'), 'https://hubspot.com'))
+      .toBe('HubSpot')
+  })
+  it('utilise le hostname si le titre est absent', () => {
+    expect(estimateCompanyName(makeScraped(''), 'https://notion.so'))
+      .toBe('Notion')
+  })
+  it('évite les sous-domaines — app.hubspot.com donne Hubspot', () => {
+    expect(estimateCompanyName(makeScraped(''), 'https://app.hubspot.com'))
+      .toBe('Hubspot')
+  })
+})
 
 describe('Heuristic website analysis', () => {
   it('detects company, GTM signals, stack, industry and size from public HTML', () => {

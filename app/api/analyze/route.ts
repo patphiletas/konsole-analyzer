@@ -8,7 +8,7 @@ import {
 import { handleError, AppError, isValidUrl, ErrorType } from '@/lib/errors'
 import { scrapeWebsite } from '@/lib/services/scraper'
 import { analyzeWebsiteWithLLM } from '@/lib/services/llm'
-import { analyzeWebsiteWithHeuristics } from '@/lib/services/heuristics'
+import { analyzeWebsiteWithHeuristics, estimateCompanyName } from '@/lib/services/heuristics'
 import { lookupDns } from '@/lib/services/dns'
 import { lookupCompanyWiki, type WikiIntelligence } from '@/lib/services/wiki'
 import { calculateFitScore, generateExplanation } from '@/lib/services/scoring'
@@ -34,17 +34,18 @@ export async function POST(request: NextRequest) {
     }
 
     const hostname = new URL(url).hostname.replace(/^www\./, '')
-    const roughName = hostname.split('.')[0].replace(/^\w/, (l) => l.toUpperCase())
 
-    const [scraped, dnsIntel, wikiIntel] = await Promise.all([
+    const [scraped, dnsIntel] = await Promise.all([
       scrapeWebsite(url),
       lookupDns(hostname).catch(() => ({ emailProvider: 'Unknown', toolsFromDns: [] })),
-      lookupCompanyWiki(roughName, hostname).catch((): WikiIntelligence => ({
-        found: false,
-        logoUrl: buildFaviconUrl(hostname),
-        screenshotUrl: buildScreenshotUrl(hostname),
-      })),
     ])
+
+    const companyName = estimateCompanyName(scraped, url)
+    const wikiIntel = await lookupCompanyWiki(companyName, hostname).catch((): WikiIntelligence => ({
+      found: false,
+      logoUrl: buildFaviconUrl(hostname),
+      screenshotUrl: buildScreenshotUrl(hostname),
+    }))
 
     const llmEnabled = Boolean(process.env.GROQ_API_KEY || process.env.OPENROUTER_API_KEY)
     const llmAnalysis = llmEnabled

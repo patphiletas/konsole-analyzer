@@ -51,7 +51,7 @@ hostname.split('.')[0].replace(/^\w/, (l) => l.toUpperCase())
 
 **Impact :** réduction des faux positifs Wikipedia, meilleur enrichissement.
 
-- [ ] À faire
+- [x] Fait — `estimateCompanyName` exportée depuis `heuristics.ts`. Dans `route.ts` : scrape + DNS en parallèle, puis `lookupCompanyWiki` avec le titre scrapé. Regex étendue aux tirets longs (en-dash `–`, em-dash `—`). Fallback hostname corrigé pour les sous-domaines (`app.hubspot.com` → `hubspot`). 5 tests dans `heuristics.test.ts`.
 
 ---
 
@@ -90,7 +90,7 @@ export const buildFaviconUrl = (domain: string) =>
 
 **Impact :** un seul endroit à modifier si l'URL du service change.
 
-- [ ] À faire
+- [x] Fait — centralisé dans `lib/utils.ts` (R2/R5 traités ensemble).
 
 ---
 

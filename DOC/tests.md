@@ -1,6 +1,6 @@
 # Tests — Kpratik
 
-60 tests Vitest répartis sur 8 fichiers. À mettre à jour à chaque nouvelle feature.
+65 tests Vitest répartis sur 8 fichiers. À mettre à jour à chaque nouvelle feature.
 
 Commande : `npm test`
 
@@ -52,11 +52,16 @@ Commande : `npm test`
 
 ---
 
-## `__tests__/services/heuristics.test.ts` — Analyse heuristique (1 test)
+## `__tests__/services/heuristics.test.ts` — Analyse heuristique (6 tests)
 
 | Test | Ce qu'il vérifie |
 |---|---|
 | Détection complète depuis HTML public | Nom entreprise, secteur, taille, stack (`TechSignal[]` avec confidence `high`), signaux GTM |
+| Extraction nom — séparateur pipe | `"Stripe \| Financial Infrastructure"` → `"Stripe"` |
+| Extraction nom — tiret long (en-dash) | `"Linear – Plan and build"` → `"Linear"` |
+| Extraction nom — deux-points | `"HubSpot: CRM..."` → `"HubSpot"` |
+| Fallback hostname si titre absent | `notion.so` → `"Notion"` |
+| Fallback hostname — sous-domaine ignoré | `app.hubspot.com` → `"Hubspot"` (pas `"App"`) |
 
 ---
 

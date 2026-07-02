@@ -112,16 +112,18 @@ function detectTechStack(scraped: ScrapedData): TechSignal[] {
   return signals.slice(0, 12)
 }
 
-function estimateCompanyName(scraped: ScrapedData, url: string): string {
+export function estimateCompanyName(scraped: ScrapedData, url: string): string {
   const titleName = scraped.title
-    .split(/\s[|-]\s|:|·/)
+    .split(/\s[|–—-]\s|:|·/)
     .map((part) => part.trim())
     .find((part) => part.length > 1 && part.length < 50)
 
   if (titleName) return titleName
 
   const host = new URL(url).hostname.replace(/^www\./, '')
-  return host.split('.')[0].replace(/^\w/, (letter) => letter.toUpperCase())
+  const parts = host.split('.')
+  const name = parts.length >= 3 ? parts[parts.length - 2] : parts[0]
+  return name.replace(/^\w/, (letter) => letter.toUpperCase())
 }
 
 function estimateSize(source: string, certifications: string[]): string {
