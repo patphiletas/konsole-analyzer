@@ -106,4 +106,4 @@ Et supprimer les interfaces redondantes dans le composant.
 
 **Impact :** source unique de vérité pour les types, cohérence garantie à la compilation.
 
-- [ ] À faire
+- [x] Fait — `lib/types.ts` réécrit : toutes les interfaces manuelles (`AnalysisResult`, `Enrichment`, `FooterSignals`, `ScoreBreakdown`, `TechSignal`, `ConfidenceLevel`, `FooterLink`, `LLMIntel`) remplacées par des types dérivés de `AnalyzeResponse` via indexed access types (`AnalyzeResponse['enrichment']`, etc.). Aucun composant modifié — les noms exportés sont identiques. 65 tests, 0 erreur TypeScript.

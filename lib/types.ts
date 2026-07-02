@@ -1,75 +1,10 @@
-export type ConfidenceLevel = 'high' | 'medium' | 'low'
+import type { AnalyzeResponse } from '@/lib/validation'
 
-export interface TechSignal {
-  name: string
-  confidence: ConfidenceLevel
-}
-
-export interface ScoreBreakdown {
-  size: number
-  industry: number
-  techStack: number
-  gtm: number
-}
-
-export interface Enrichment {
-  found: boolean
-  logoUrl: string
-  screenshotUrl: string
-  wikiUrl?: string
-  summary?: string
-  thumbnail?: string
-  founder?: string
-  ceo?: string
-  founded?: string
-  employees?: string
-  headquarters?: string
-  stockExchange?: string
-  parentOrg?: string
-  revenue?: string
-  netIncome?: string
-}
-
-export interface FooterLink {
-  name: string
-  url: string
-}
-
-export interface FooterSignals {
-  copyrightYear?: string
-  foundedYear?: string
-  socialLinks: FooterLink[]
-  notableLinks: FooterLink[]
-  certifications: string[]
-  legalForm?: string
-  headquarters?: string
-}
-
-export interface LLMIntel {
-  targetSegment?: string
-  salesModel?: string
-  targetPersona?: string
-  tractionSignals?: string[]
-  competitors?: string[]
-  fundingSignals?: string[]
-}
-
-export interface AnalysisResult {
-  url: string
-  companyName: string
-  description: string
-  industry: string
-  estimatedSize: string
-  techStack: TechSignal[]
-  gtmSignals: string[]
-  fitScore: number
-  scoreBreakdown: ScoreBreakdown
-  explanation: string
-  analysisSource: string
-  emailProvider: string
-  dnsTools: string[]
-  footerSignals: FooterSignals
-  enrichment: Enrichment
-  llmIntel?: LLMIntel
-  analyzedAt: string
-}
+export type AnalysisResult  = AnalyzeResponse
+export type Enrichment      = AnalyzeResponse['enrichment']
+export type FooterSignals   = AnalyzeResponse['footerSignals']
+export type ScoreBreakdown  = AnalyzeResponse['scoreBreakdown']
+export type TechSignal      = AnalyzeResponse['techStack'][number]
+export type ConfidenceLevel = TechSignal['confidence']
+export type FooterLink      = FooterSignals['socialLinks'][number]
+export type LLMIntel        = NonNullable<AnalyzeResponse['llmIntel']>
