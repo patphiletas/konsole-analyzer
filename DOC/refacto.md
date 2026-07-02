@@ -71,7 +71,7 @@ Ou regrouper les trois niveaux dans un seul tableau avec un champ `confidence` n
 
 **Impact :** plus facile d'ajouter des patterns, logique de détection centralisée.
 
-- [ ] À faire
+- [x] Fait — `type PatternEntry = { name: string; regex: RegExp }` introduit. Les trois tableaux (`TECH_PATTERNS`, `INDUSTRY_PATTERNS`, `GTM_PATTERNS`) migrent des tuples `[string, RegExp]` vers des objets nommés. `detectByPatterns` et `detectTechStack` utilisent la destructuration objet `{ name, regex }`. 65 tests — aucune régression.
 
 ---
 
