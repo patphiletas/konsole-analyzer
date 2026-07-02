@@ -94,6 +94,16 @@ Format : symptôme → cause → solution choisie.
 
 ---
 
+## Bug #10 — CI GitHub Actions en échec : `npm ci` / Node 20 déprécié
+
+**Symptôme :** La CI échoue en 8s au step `npm ci` — erreur `EUSAGE: package.json and package-lock.json are not in sync` (packages `@emnapi/runtime` et `@emnapi/core` absents du lock file). Avertissement supplémentaire : Node 20 déprécié sur les runners GitHub.
+
+**Cause :** `package-lock.json` désynchronisé avec `package.json` (dépendances installées localement sans mise à jour du lock file). Node version fixée à 20 dans le workflow alors que GitHub Actions tourne désormais sur Node 24 par défaut.
+
+**Solution :** `npm install` en local pour resynchroniser `package-lock.json`, puis passage à `node-version: 24` dans `.github/workflows/ci.yml`. Commit des deux fichiers.
+
+---
+
 ## Bug #11 — Données Wikidata toujours périmées (salariés, CA, bénéfice)
 
 **Symptôme :** Les nouveaux champs Wikidata (salariés, chiffre d'affaires, bénéfice) s'affichaient avec des valeurs très anciennes — ex : Salesforce affichait 767 salariés (1999) et $748M de CA (2013) au lieu de 35 000 salariés et $37.9Md.
@@ -114,12 +124,4 @@ Format : symptôme → cause → solution choisie.
 
 **Reste à faire :** Dans `scraper.ts`, chercher le pattern `©\s*(\d{4})\s*[–-]\s*\d{4}` en priorité pour extraire l'année de début quand disponible (ex : `© 2010–2026` → exposer 2010 séparément comme année de lancement).
 
----
 
-## Bug #10 — CI GitHub Actions en échec : `npm ci` / Node 20 déprécié
-
-**Symptôme :** La CI échoue en 8s au step `npm ci` — erreur `EUSAGE: package.json and package-lock.json are not in sync` (packages `@emnapi/runtime` et `@emnapi/core` absents du lock file). Avertissement supplémentaire : Node 20 déprécié sur les runners GitHub.
-
-**Cause :** `package-lock.json` désynchronisé avec `package.json` (dépendances installées localement sans mise à jour du lock file). Node version fixée à 20 dans le workflow alors que GitHub Actions tourne désormais sur Node 24 par défaut.
-
-**Solution :** `npm install` en local pour resynchroniser `package-lock.json`, puis passage à `node-version: 24` dans `.github/workflows/ci.yml`. Commit des deux fichiers.
