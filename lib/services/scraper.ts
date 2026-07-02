@@ -1,4 +1,69 @@
+import * as dnsPromises from 'dns/promises'
 import { AppError, ErrorType } from '../errors'
+
+const PRIVATE_IP_RE = [
+  /^127\./,
+  /^10\./,
+  /^172\.(1[6-9]|2\d|3[01])\./,
+  /^192\.168\./,
+  /^169\.254\./,
+  /^0\./,
+  /^::1$/,
+  /^fc/i,
+  /^fd/i,
+  /^fe80:/i,
+]
+
+export function isPrivateIp(ip: string): boolean {
+  return PRIVATE_IP_RE.some((re) => re.test(ip))
+}
+
+async function assertPublicUrl(url: string): Promise<void> {
+  const { hostname } = new URL(url)
+  const host = hostname.replace(/^\[|\]$/g, '')  // normalise [::1] → ::1
+  if (/^(localhost|0\.0\.0\.0|::1)$/.test(host)) {
+    throw new AppError(ErrorType.INVALID_URL, 'URL blocked: private address', 400)
+  }
+  let address: string
+  try {
+    ;({ address } = await dnsPromises.lookup(host))
+  } catch {
+    throw new AppError(ErrorType.FETCH_FAILED, `DNS resolution failed for ${host}`, 400)
+  }
+  if (isPrivateIp(address)) {
+    throw new AppError(ErrorType.INVALID_URL, 'URL blocked: private address', 400)
+  }
+}
+
+const MAX_BODY_BYTES = 500_000
+
+async function readBodyWithLimit(response: Response): Promise<string> {
+  const reader = response.body?.getReader()
+  if (!reader) return response.text()
+
+  const chunks: Uint8Array[] = []
+  let total = 0
+
+  try {
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done || !value) break
+      if (total + value.length > MAX_BODY_BYTES) {
+        chunks.push(value.slice(0, MAX_BODY_BYTES - total))
+        break
+      }
+      chunks.push(value)
+      total += value.length
+    }
+  } finally {
+    reader.cancel().catch(() => {})
+  }
+
+  const merged = new Uint8Array(chunks.reduce((n, c) => n + c.length, 0))
+  let offset = 0
+  for (const c of chunks) { merged.set(c, offset); offset += c.length }
+  return new TextDecoder().decode(merged)
+}
 
 export interface FooterLink {
   name: string
@@ -140,6 +205,8 @@ function parseFooterSignals(html: string): FooterSignals {
 
 export async function scrapeWebsite(url: string): Promise<ScrapedData> {
   try {
+    await assertPublicUrl(url)
+
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 10000)
 
@@ -161,7 +228,7 @@ export async function scrapeWebsite(url: string): Promise<ScrapedData> {
       )
     }
 
-    const html = await response.text()
+    const html = await readBodyWithLimit(response)
 
     const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i)
     const title = titleMatch ? titleMatch[1].trim() : ''
