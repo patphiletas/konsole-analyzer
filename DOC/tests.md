@@ -1,6 +1,6 @@
 # Tests — Kpratik
 
-86 tests Vitest répartis sur 10 fichiers. À mettre à jour à chaque nouvelle feature.
+88 tests Vitest répartis sur 11 fichiers. À mettre à jour à chaque nouvelle feature.
 
 Commande : `npm test`
 
@@ -108,6 +108,15 @@ Commande : `npm test`
 | resolveFaviconUrl : favicon relatif | Résolu en URL absolue depuis le hostname |
 | resolveFaviconUrl : favicon absolu | Retourné tel quel |
 | resolveFaviconUrl : protocole non http/https | `javascript:` → fallback |
+
+---
+
+## `__tests__/lib/ratelimit.test.ts` — Rate limiting S6 (2 tests)
+
+| Test | Ce qu'il vérifie |
+|---|---|
+| `ratelimit` est null sans vars Upstash | Fail open en dev — aucune erreur sans Redis |
+| `ratelimit` instancié avec les vars | Instance `Ratelimit` créée avec `slidingWindow(10, '60 s')` |
 
 ---
 

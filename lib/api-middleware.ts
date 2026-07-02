@@ -48,6 +48,7 @@ export function createErrorResponse(error: unknown): ApiResponse<null> {
 export function toJsonResponse<T>(
   response: ApiResponse<T>,
   statusCode: number = 200,
+  headers?: Record<string, string>,
 ): NextResponse {
-  return NextResponse.json(response, { status: statusCode })
+  return NextResponse.json(response, { status: statusCode, headers })
 }

@@ -40,21 +40,19 @@ Le HTML scrapé est traité par regex uniquement (pas de parsing DOM côté serv
 
 ## Risques identifiés
 
-### S6 — Pas de rate limiting (priorité haute)
+### S6 — Rate limiting (implémenté)
 
-La route `POST /api/analyze` n'a aucune limitation de débit. Un attaquant peut :
-- boucler sur des milliers d'URLs pour épuiser le quota LLM
-- utiliser Kpratik comme relais pour envoyer des milliers de requêtes vers des sites tiers (DDoS indirect)
+La route `POST /api/analyze` est protégée par un sliding window de **10 requêtes / 60 secondes par IP** via `@upstash/ratelimit` + Redis.
 
-**Mesure recommandée :** rate limiting par IP via le middleware Next.js ou une règle Vercel Edge.
+**Variables d'environnement requises :**
+- `UPSTASH_REDIS_REST_URL`
+- `UPSTASH_REDIS_REST_TOKEN`
 
-```typescript
-// Exemple avec upstash/ratelimit (Redis) ou vercel/edge-config
-// lib/middleware.ts
-export const config = { matcher: '/api/:path*' }
-```
+Si ces variables sont absentes (environnement local sans Upstash), le rate limiting est désactivé sans erreur (fail open). En production Vercel, elles doivent être configurées dans les variables d'environnement du projet.
 
-Vercel propose nativement un rate limiting via Vercel Firewall (plan Pro).
+En cas de dépassement, la route retourne `429 Too Many Requests` avec un header `Retry-After` indiquant le délai en secondes avant de pouvoir réessayer.
+
+**Créer un compte Upstash :** [console.upstash.com](https://console.upstash.com) → New Database → REST API → copier les deux variables dans Vercel.
 
 ### S7 — SSRF (Server-Side Request Forgery)
 
@@ -203,7 +201,7 @@ const html = new TextDecoder().decode(Buffer.concat(chunks))
 
 | Priorité | Risque | Mesure | Statut |
 |---|---|---|---|
-| Haute | S6 — Rate limiting absent | Middleware Vercel ou upstash/ratelimit | À faire |
+| Haute | S6 — Rate limiting absent | Middleware Vercel ou upstash/ratelimit | ✅ Fait |
 | Haute | S7 — SSRF possible | Valider IP publique avant fetch | ✅ Fait |
 | Haute | S8 — PII dans appels LLM | `scrubHtmlForLlm()` avant envoi | ✅ Fait |
 | Haute | S12 — Prompt injection | Délimiteurs dans le prompt + validation output | ✅ Fait |
