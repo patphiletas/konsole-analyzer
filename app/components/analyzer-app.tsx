@@ -159,7 +159,7 @@ export default function Home() {
 
           return (
             <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
-              <div className="space-y-5">
+              <div className="min-w-0 space-y-5">
                 <CompanyCard
                   companyName={result.companyName}
                   url={result.url}

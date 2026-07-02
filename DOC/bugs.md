@@ -124,6 +124,18 @@ Format : symptôme → cause → solution choisie.
 
 ---
 
+## Bug #14 — Meta description tronquée en mode heuristique seul
+
+**Symptôme :** En l'absence de clé LLM (mode `Heuristiques`), la description affichée dans la fiche entreprise est la meta description brute du site. Celle-ci peut être coupée en plein mot (ex : `"…des dirigeants d"`) à cause d'un attribut HTML mal échappé ou d'une limite de caractères imposée par le CMS du site analysé.
+
+**Cause :** La meta description est extraite telle quelle depuis `<meta name="description">`. Si l'HTML contient un guillemet non échappé dans l'attribut `content`, le parser HTML s'arrête là. Quand le LLM est actif, il génère sa propre description (phrase complète) qui remplace la meta description dans `mergeAnalyses()` — le problème disparaît.
+
+**Solution :**
+- **Données :** la description LLM est déjà prioritaire dans `mergeAnalyses()` (`llmAnalysis.description || heuristic.description`).
+- **Fallback heuristique :** si la meta description ne se termine pas par `.!?`, on la coupe au dernier mot complet (dernier espace) pour éviter les mots tronqués mi-caractère. Pas d'ellipse ajoutée — une description plus courte mais lisible vaut mieux qu'un `…` trompeur qui sous-entend un lien vers plus de contenu.
+
+---
+
 ## Bug #12 — Année de copyright footer confondue avec l'année de création *(à corriger)*
 
 **Symptôme :** La carte footer affiche une date comme "2026" qui peut être interprétée comme "l'entreprise existe depuis 2026", alors qu'il s'agit de l'année courante dans la mention `© 2026 Company`.

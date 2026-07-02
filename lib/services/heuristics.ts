@@ -125,6 +125,13 @@ export function estimateCompanyName(scraped: ScrapedData, url: string): string {
   return name.replace(/^\w/, (letter) => letter.toUpperCase())
 }
 
+function finalizeDescription(desc: string): string {
+  const t = desc.trim()
+  if (/[.!?]$/.test(t)) return t
+  const lastSpace = t.lastIndexOf(' ')
+  return lastSpace > 0 ? t.slice(0, lastSpace) : t
+}
+
 function estimateSize(source: string, certifications: string[]): string {
   const normalized = source.toLowerCase()
 
@@ -209,9 +216,9 @@ export function analyzeWebsiteWithHeuristics(
     estimatedSize: estimateSize(fullText, certifications),
     techStack,
     gtmSignals: uniqStrings([...gtmSignals, ...gtmFromFooter]),
-    description:
-      scraped.description ||
-      `Website analysis for ${new URL(url).hostname.replace(/^www\./, '')}.`,
+    description: scraped.description
+      ? finalizeDescription(scraped.description)
+      : `Website analysis for ${new URL(url).hostname.replace(/^www\./, '')}.`,
   }
 
   return mergeAnalyses(heuristic, llmAnalysis)
