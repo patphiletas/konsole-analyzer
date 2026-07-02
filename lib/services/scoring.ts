@@ -126,50 +126,38 @@ function scoreLevel(score: number): string {
   return 'profil faible'
 }
 
-function formatList(values: string[], fallback: string): string {
-  if (!values.length) return fallback
-  return values.slice(0, 4).join(', ')
+function formatList(values: string[], limit = 4): string {
+  return values.slice(0, limit).join(', ')
 }
 
 export function generateExplanation(
   breakdown: ScoreBreakdown,
   input?: ScoringInput,
 ): string {
-  const reasons = [
-    `Score ${breakdown.fitScore}/100 (${scoreLevel(breakdown.fitScore)})`,
-    `taille ${breakdown.sizeScore}/30`,
-    `secteur ${breakdown.industryScore}/30`,
-    `stack ${breakdown.techStackScore}/25`,
-    `GTM ${breakdown.gtmScore}/20`,
-  ]
-
   if (input) {
-    const details = [
+    return [
       input.industry !== 'Unknown'
-        ? `secteur détecté: ${input.industry}`
-        : 'secteur peu explicite',
+        ? `Secteur : ${input.industry} (${breakdown.industryScore}/30)`
+        : `Secteur peu identifiable (${breakdown.industryScore}/30)`,
+      input.techStack.length > 0
+        ? `Stack : ${formatList(input.techStack)} (${breakdown.techStackScore}/25)`
+        : `Stack non concluante (${breakdown.techStackScore}/25)`,
+      input.gtmSignals.length > 0
+        ? `Signaux : ${formatList(input.gtmSignals)} (${breakdown.gtmScore}/20)`
+        : `Peu de signaux commerciaux (${breakdown.gtmScore}/20)`,
       input.estimatedSize !== 'Unknown'
-        ? `taille estimée: ${input.estimatedSize}`
-        : 'taille difficile à estimer',
-      `stack observée: ${formatList(input.techStack, 'aucune stack forte')}`,
-      `signaux GTM: ${formatList(input.gtmSignals, 'peu de signaux visibles')}`,
-    ]
-
-    return `${reasons.join(' | ')}. ${details.join('. ')}.`
+        ? `Taille : ${input.estimatedSize} (${breakdown.sizeScore}/30)`
+        : `Taille difficile à estimer (${breakdown.sizeScore}/30)`,
+    ].join('\n')
   }
 
-  if (breakdown.sizeScore >= 25) {
-    reasons.push('taille intéressante')
-  }
-  if (breakdown.industryScore >= 30) {
-    reasons.push('secteur très proche SaaS/tech')
-  }
-  if (breakdown.techStackScore >= 20) {
-    reasons.push('stack moderne')
-  }
-  if (breakdown.gtmScore >= 15) {
-    reasons.push('signaux GTM forts')
-  }
+  const lines: string[] = [`Score ${breakdown.fitScore}/100 · ${scoreLevel(breakdown.fitScore)}`]
+  const qualifiers: string[] = []
+  if (breakdown.sizeScore >= 25) qualifiers.push('taille intéressante')
+  if (breakdown.industryScore >= 30) qualifiers.push('secteur très proche SaaS/tech')
+  if (breakdown.techStackScore >= 20) qualifiers.push('stack moderne')
+  if (breakdown.gtmScore >= 15) qualifiers.push('signaux GTM forts')
+  if (qualifiers.length > 0) lines.push(qualifiers.join(', '))
 
-  return reasons.join('. ') + '.'
+  return lines.join('\n')
 }

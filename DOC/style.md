@@ -38,7 +38,7 @@ Les labels de l'UI mélangent les deux langues (ex: "Tech Stack", "GTM Signals" 
 1. **Langue** — transversal, sans risque de régression visuelle ✅ fait
 2. **Layout 2 colonnes** — le layout était déjà 2 colonnes (`lg:grid-cols-[1fr_360px]`) ; le vrai problème était les 7 cartes empilées dans la colonne gauche ✅ résolu par les onglets
 3. **Onglets dans la colonne gauche** — `CompanyCard` toujours visible, puis 4 onglets : Stack technique / Signaux / Données publiques / Analyse IA (masqué sans LLM). Réinitialisation à "Stack" à chaque nouvelle analyse ✅ fait
-4. **Texte du score** — remplacer le paragraphe généré par 3–4 bullet points scannables ; implique un changement de logique dans `scoring.ts`, pas juste du CSS
+4. **Texte du score + cercle animé** — `ScoreCard.tsx` remplacé : cercle SVG animé (stroke-dashoffset, 0.8s ease-out), couleur selon niveau (emerald/blue/amber/rose), pill label, explication en bullet points séparés par `\n`. `generateExplanation()` dans `scoring.ts` réécrit en format `\n`-séparé. Tests mis à jour ✅ fait
 5. **Graphique de breakdown** — barres de progression colorées préférables au radar chart sur 4 axes seulement (radar beau mais peu lisible sur mobile et peu différenciant avec si peu d'axes)
 6. **Logo** — afficher l'identité visuelle de l'entreprise en grand donnerait un effet "fiche compte" professionnel fort ; cosmétique mais psychologiquement impactant pour un outil sales
 

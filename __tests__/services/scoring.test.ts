@@ -72,7 +72,7 @@ describe('Scoring', () => {
     })
 
     const explanation = generateExplanation(breakdown)
-    expect(explanation).toContain('.')
+    expect(explanation).toContain('·')
     expect(explanation.length).toBeGreaterThan(10)
   })
 
@@ -87,10 +87,9 @@ describe('Scoring', () => {
 
     const explanation = generateExplanation(breakdown, input)
 
-    expect(explanation).toContain(`Score ${breakdown.fitScore}/100`)
-    expect(explanation).toContain('secteur détecté: SaaS / Software')
-    expect(explanation).toContain('stack observée: Next.js, Stripe')
-    expect(explanation).toContain('signaux GTM: Page de tarifs, Réservation démo')
+    expect(explanation).toContain('SaaS / Software')
+    expect(explanation).toContain('Next.js, Stripe')
+    expect(explanation).toContain('Page de tarifs, Réservation démo')
   })
 
   it('should cap score at 100', () => {
