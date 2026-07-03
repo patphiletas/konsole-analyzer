@@ -108,9 +108,23 @@ export default function Home() {
           </div>
 
           <form onSubmit={handleAnalyze} className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 shadow-sm">
-            <label htmlFor="url" className="text-sm font-medium text-zinc-800">
-              Site à analyser
-            </label>
+            <div className="flex items-center justify-between">
+              <label htmlFor="url" className="text-sm font-medium text-zinc-800">
+                Site à analyser
+              </label>
+              <button
+                type="button"
+                onClick={toggleLazyMode}
+                title={lazyMode ? 'Mode lazy actif — cliquer pour désactiver' : 'Mode lazy inactif — cliquer pour activer'}
+                className={`rounded-full border px-3 py-1 text-xs transition ${
+                  lazyMode
+                    ? 'border-amber-400 bg-amber-50 text-amber-700 hover:bg-amber-100'
+                    : 'border-zinc-200 text-zinc-400 hover:border-zinc-400 hover:text-zinc-600'
+                }`}
+              >
+                IA {lazyMode ? 'lazy' : 'auto'}
+              </button>
+            </div>
             <div className="mt-2 flex flex-col gap-2 sm:flex-row lg:flex-col">
               <input
                 id="url"
@@ -130,7 +144,7 @@ export default function Home() {
                 {loading ? 'Analyse...' : 'Analyser'}
               </button>
             </div>
-            <div className="mt-3 flex flex-wrap items-center gap-2">
+            <div className="mt-3 flex flex-wrap gap-2">
               {examples.map((example) => (
                 <button
                   key={example}
@@ -142,18 +156,6 @@ export default function Home() {
                   {example}
                 </button>
               ))}
-              <button
-                type="button"
-                onClick={toggleLazyMode}
-                title={lazyMode ? 'Mode lazy actif — cliquer pour désactiver' : 'Mode lazy inactif — cliquer pour activer'}
-                className={`ml-auto rounded-full border px-3 py-1 text-xs transition ${
-                  lazyMode
-                    ? 'border-amber-400 bg-amber-50 text-amber-700 hover:bg-amber-100'
-                    : 'border-zinc-200 text-zinc-400 hover:border-zinc-400 hover:text-zinc-600'
-                }`}
-              >
-                IA {lazyMode ? 'lazy' : 'auto'}
-              </button>
             </div>
           </form>
         </div>

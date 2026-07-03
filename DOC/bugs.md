@@ -120,9 +120,9 @@ Format : symptôme → cause → solution choisie.
 
 **Cause :** Le footer contient généralement `© [année courante] Company` — ce n'est pas l'année de fondation.
 
-**Solution partielle appliquée :** Dans `FooterCard.tsx`, le label "Actif depuis" remplacé par "Copyright footer" et la valeur préfixée par "©".
+**Solution appliquée :** Dans `FooterCard.tsx`, le label "Actif depuis" remplacé par "Copyright footer" et la valeur préfixée par "©".
 
-**Reste à faire :** Dans `scraper.ts`, chercher le pattern `©\s*(\d{4})\s*[–-]\s*\d{4}` en priorité pour extraire l'année de début quand disponible (ex : `© 2010–2026` → exposer 2010 séparément).
+**Décision (2026-07-03) :** Le parsing de `© 2010–2026` pour extraire l'année de fondation ne sera pas implémenté. L'année de création est souvent présente dans le bloc description (Wikidata/Wikipedia), et l'année de copyright est déjà affichée telle quelle. Complexité non justifiée.
 
 ---
 
