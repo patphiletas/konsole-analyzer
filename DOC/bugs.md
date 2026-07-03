@@ -179,3 +179,13 @@ Format : symptôme → cause → solution choisie.
 **Cause :** Le filtre anti-faux-positifs (bug #6) exige que le titre de l'article Wikipedia contienne `companyName`. Quand le nom extrait du titre du site diffère légèrement du nom de l'article Wikipedia (casse, suffixe, rebranding…), le filtre rejette tous les résultats et retourne `found: false`.
 
 **Solution :** Fallback dans `lookupCompanyWiki` — si la recherche par `companyName` échoue, retry avec le nom de domaine sans TLD (`domainRoot = domain.split('.')[0]`), uniquement si différent du companyName. Couvre les cas où le titre extrait du site ne correspond pas exactement au nom Wikipedia.
+
+---
+
+## Bug #18 — Header fixe couvre tout l'écran sur mobile
+
+**Symptôme :** Sur mobile, le header sticky occupe la quasi-totalité de l'écran car il contient les deux colonnes empilées (titre + formulaire), soit environ 500px de hauteur.
+
+**Cause :** `sticky` appliqué sans breakpoint — sur mobile les colonnes `lg:grid-cols-[1fr_380px]` s'empilent verticalement, rendant le header trop grand pour être fixe.
+
+**Solution :** `sticky` remplacé par `lg:sticky` — le header défile normalement sur mobile et reste fixe uniquement à partir de 1024px.

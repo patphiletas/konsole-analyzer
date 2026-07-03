@@ -92,7 +92,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen text-zinc-950">
-      <section className="sticky top-0 z-10 border-b border-blue-600 bg-blue-500 shadow-lg">
+      <section className="lg:sticky top-0 z-10 border-b border-blue-600 bg-blue-500 shadow-lg">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-8 lg:grid-cols-[1fr_380px] lg:px-8">
           <div className="flex flex-col justify-center">
             <p className="text-sm font-semibold uppercase tracking-wide text-blue-200">
