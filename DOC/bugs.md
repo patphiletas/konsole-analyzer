@@ -158,6 +158,8 @@ Format : symptôme → cause → solution choisie.
 
 **Reste à faire :** indicateur UI discret quand le LLM est en échec, plutôt que la disparition silencieuse de l'onglet.
 
+**Décision architecturale (2026-07-03) :** L'idée d'un appel LLM différé ("lazy") — déclenché au clic sur l'onglet "Analyse IA" plutôt que lors de l'analyse principale — a été étudiée mais non retenue. Le plan était : `POST /api/analyze` sans LLM + nouveau `POST /api/analyze-llm` appelé à la demande. Problème principal : `mergeAnalyses()` utilise le LLM pour enrichir la description, les signaux GTM et la stack dans la carte principale — avec le lazy loading, ces champs resteraient heuristiques seuls. Trade-off jugé trop dégradant. La limite des 100k tokens/jour n'est atteinte que lors de sessions de développement intensif, pas en usage normal.
+
 ---
 
 ## Bug #16 — `"0"` parasite affiché sous les résultats IA

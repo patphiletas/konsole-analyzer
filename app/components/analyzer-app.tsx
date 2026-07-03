@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { AnalysisResult } from '@/lib/types'
 
 type Tab = 'stack' | 'signaux' | 'donnees' | 'ia'
@@ -23,6 +23,41 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<Tab>('stack')
   const [examples, setExamples] = useState<string[]>(DEFAULT_EXAMPLES)
+  const [llmLoading, setLlmLoading] = useState(false)
+  const [llmError, setLlmError] = useState<string | null>(null)
+  const [lazyMode, setLazyMode] = useState(false)
+
+  useEffect(() => {
+    setLazyMode(localStorage.getItem('kpratik_lazy_llm') === '1')
+  }, [])
+
+  function toggleLazyMode() {
+    const next = !lazyMode
+    setLazyMode(next)
+    if (next) localStorage.setItem('kpratik_lazy_llm', '1')
+    else localStorage.removeItem('kpratik_lazy_llm')
+  }
+
+  async function handleTabClick(tab: Tab) {
+    setActiveTab(tab)
+    if (tab !== 'ia' || !result || result.llmIntel || llmLoading) return
+    setLlmLoading(true)
+    setLlmError(null)
+    try {
+      const res = await fetch('/api/analyze-llm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: result.url }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error?.message || 'Analyse IA échouée')
+      setResult(prev => prev ? { ...prev, llmIntel: data.data.llmIntel, analysisSource: data.data.analysisSource } : prev)
+    } catch (err) {
+      setLlmError(err instanceof Error ? err.message : 'Erreur IA inconnue')
+    } finally {
+      setLlmLoading(false)
+    }
+  }
 
   async function handleAnalyze(e: { preventDefault(): void }) {
     e.preventDefault()
@@ -35,7 +70,7 @@ export default function Home() {
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url, ...(lazyMode && { lazyLlm: true }) }),
       })
 
       const data = await response.json()
@@ -44,6 +79,7 @@ export default function Home() {
         throw new Error(data.error?.message || 'Analyse échouée')
       }
 
+      setLlmError(null)
       setResult(data.data)
       const hostname = url.replace(/^https?:\/\//, '').replace(/\/.*$/, '').replace(/^www\./, '')
       setExamples(prev => [hostname, ...prev.filter(u => u !== hostname)].slice(0, 3))
@@ -94,7 +130,7 @@ export default function Home() {
                 {loading ? 'Analyse...' : 'Analyser'}
               </button>
             </div>
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="mt-3 flex flex-wrap items-center gap-2">
               {examples.map((example) => (
                 <button
                   key={example}
@@ -106,6 +142,18 @@ export default function Home() {
                   {example}
                 </button>
               ))}
+              <button
+                type="button"
+                onClick={toggleLazyMode}
+                title={lazyMode ? 'Mode lazy actif — cliquer pour désactiver' : 'Mode lazy inactif — cliquer pour activer'}
+                className={`ml-auto rounded-full border px-3 py-1 text-xs transition ${
+                  lazyMode
+                    ? 'border-amber-400 bg-amber-50 text-amber-700 hover:bg-amber-100'
+                    : 'border-zinc-200 text-zinc-400 hover:border-zinc-400 hover:text-zinc-600'
+                }`}
+              >
+                IA {lazyMode ? 'lazy' : 'auto'}
+              </button>
             </div>
           </form>
         </div>
@@ -169,7 +217,7 @@ export default function Home() {
             { id: 'stack',   label: 'Stack technique'  },
             { id: 'signaux', label: 'Signaux'           },
             ...(hasPublicData ? [{ id: 'donnees' as Tab, label: 'Données publiques' }] : []),
-            ...(result.llmIntel ? [{ id: 'ia' as Tab, label: 'Analyse IA' }] : []),
+            ...(result.llmIntel || result.llmAvailable ? [{ id: 'ia' as Tab, label: 'Analyse IA' }] : []),
           ]
 
           return (
@@ -192,7 +240,7 @@ export default function Home() {
                         <button
                           key={tab.id}
                           type="button"
-                          onClick={() => setActiveTab(tab.id)}
+                          onClick={() => handleTabClick(tab.id)}
                           className={`px-4 py-3 text-sm font-medium border-b-2 transition ${
                             activeTab === tab.id
                               ? 'border-blue-600 text-blue-700'
@@ -221,8 +269,14 @@ export default function Home() {
                         <FooterCard footerSignals={result.footerSignals} />
                       </>
                     )}
-                    {activeTab === 'ia' && result.llmIntel && (
-                      <LLMIntelCard llmIntel={result.llmIntel} />
+                    {activeTab === 'ia' && (
+                      llmLoading ? (
+                        <div className="h-40 animate-pulse rounded-lg border border-zinc-200 bg-white" />
+                      ) : llmError ? (
+                        <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900">{llmError}</div>
+                      ) : result.llmIntel ? (
+                        <LLMIntelCard llmIntel={result.llmIntel} />
+                      ) : null
                     )}
                   </div>
                 </div>

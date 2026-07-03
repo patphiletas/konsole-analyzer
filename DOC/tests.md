@@ -4,6 +4,8 @@
 
 > **Note** : les composants React (`analyzer-app.tsx`, cards) ne sont pas couverts par des tests unitaires — le projet n'a pas React Testing Library configuré. Les changements UI sont validés manuellement dans le navigateur.
 
+> **Note** : les routes Next.js (`app/api/analyze/`, `app/api/analyze-llm/`) ne sont pas testées. Décision délibérée : les services sous-jacents sont tous couverts unitairement, et tester les routes reviendrait à tester du câblage en mockant `NextRequest` + tous les services — coût de maintenance élevé pour peu de valeur ajoutée sur un projet solo. **À revisiter si le projet passe en équipe ou si un CI bloque les livraisons.** Les 3 cas qui mériteraient alors d'être couverts en priorité : (1) refus d'URL invalide → 400, (2) rate limit dépassé → 429, (3) mode lazy (`lazyLlm: true`) → réponse sans `llmIntel`.
+
 Commande : `npm test`
 
 ---

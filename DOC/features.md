@@ -303,50 +303,47 @@ function scoreLevel(score: number): string {
 
 ## 9. Enrichissement LLM (optionnel)
 
-**Ce que ça fait :** Si `GROQ_API_KEY` ou `OPENROUTER_API_KEY` est présente, envoie le HTML scrapé à un LLM pour enrichir la détection et extraire des signaux commerciaux impossibles à obtenir par regex. Groq (Llama 3.3 70B) est le primaire, OpenRouter `:free` est le fallback automatique. L'app fonctionne sans aucune clé (heuristiques locales).
+**Ce que ça fait :** Si `GROQ_API_KEY` est présente, envoie le HTML scrapé à Groq (Llama 3.3 70B) pour enrichir la détection et extraire des signaux commerciaux impossibles à obtenir par regex. L'app fonctionne sans aucune clé (heuristiques locales).
 
 **Nouveaux champs extraits par le LLM :** segment cible, modèle de vente (PLG/SLG/hybrid), persona, signaux de traction quantifiés, concurrents mentionnés, signaux de financement.
 
-**Fichier :** `lib/services/llm.ts` · `app/api/analyze/route.ts`
+**Mode lazy :** par défaut, l'appel LLM a lieu pendant l'analyse principale (`POST /api/analyze`). En mode lazy (`LAZY_LLM=true` ou bouton "IA lazy" dans le formulaire), il est différé à un second appel `POST /api/analyze-llm`, déclenché uniquement au clic sur l'onglet "Analyse IA". Permet d'économiser le quota journalier Groq (100 000 tokens/jour sur le tier gratuit).
+
+**Fichiers :** `lib/services/llm.ts` · `app/api/analyze/route.ts` · `app/api/analyze-llm/route.ts`
 
 ```typescript
-// Groq en primaire, OpenRouter :free en fallback
-async function callLLM(prompt: string): Promise<string> {
-  if (process.env.GROQ_API_KEY) {
-    try {
-      return await callGroq(prompt)       // Llama 3.3 70B
-    } catch (err) {
-      if (!process.env.OPENROUTER_API_KEY) throw err
-      return await callOpenRouter(prompt) // fallback :free
-    }
-  }
-  if (process.env.OPENROUTER_API_KEY) return await callOpenRouter(prompt)
-  throw new AppError(ErrorType.INTERNAL_ERROR, 'No LLM API key configured', 500)
-}
+// Dans analyze/route.ts — saut du LLM en mode lazy
+const lazy = validated.lazyLlm ?? process.env.LAZY_LLM === 'true'
+const llmEnabled = !lazy && Boolean(process.env.GROQ_API_KEY || process.env.OPENROUTER_API_KEY)
 
-// Dans route.ts — activation conditionnelle
-const llmEnabled = Boolean(process.env.GROQ_API_KEY || process.env.OPENROUTER_API_KEY)
+// analyze-llm/route.ts — appelé au clic sur l'onglet, retourne uniquement llmIntel
+const scraped = await scrapeWebsite(url)
+const llmAnalysis = await analyzeWebsiteWithLLM(scraped.html, scraped.title, scraped.description, scraped.scripts)
+return toJsonResponse(createSuccessResponse({ llmIntel: { ... }, analysisSource: '...' }), 200)
 ```
 
 ---
 
 ## 10. Pipeline d'analyse (orchestration)
 
-**Ce que ça fait :** La route API lance scraping, DNS et Wikipedia en parallèle, puis combine les résultats. Le LLM (si activé) tourne séquentiellement après le scraping car il en dépend.
+**Ce que ça fait :** La route API lance scraping et DNS en parallèle, puis Wikipedia après le scraping (nécessite le nom de l'entreprise). Le LLM (si activé et non lazy) tourne séquentiellement après le scraping car il en dépend. En mode lazy, un second appel à `POST /api/analyze-llm` est déclenché à la demande.
 
 **Fichier :** `app/api/analyze/route.ts`
 
 ```typescript
-// Scraping, DNS et Wikipedia en parallèle
-const [scraped, dnsIntel, wikiIntel] = await Promise.all([
+// Scraping + DNS en parallèle
+const [scraped, dnsIntel] = await Promise.all([
   scrapeWebsite(url),
   lookupDns(hostname).catch(() => ({ emailProvider: 'Unknown', toolsFromDns: [] })),
-  lookupCompanyWiki(roughName, hostname).catch((): WikiIntelligence => ({
-    found: false,
-    logoUrl: buildFaviconUrl(hostname),
-    screenshotUrl: buildScreenshotUrl(hostname),
-  })),
 ])
+
+// Wikipedia après scraping (nécessite le nom de l'entreprise)
+const companyName = estimateCompanyName(scraped, url)
+const wikiIntel = await lookupCompanyWiki(companyName, hostname).catch(...)
+
+// LLM séquentiel, sauté en mode lazy
+const lazy = validated.lazyLlm ?? process.env.LAZY_LLM === 'true'
+const llmAnalysis = !lazy && llmEnabled ? await analyzeWebsiteWithLLM(...) : undefined
 ```
 
 ---
@@ -394,6 +391,8 @@ export const analyzeResponseSchema = z.object({
 | `GtmCard` | Signaux GTM (pricing, demo, free trial…) sous forme de badges |
 | `DnsCard` | Provider email, outils détectés via SPF |
 | `FooterCard` | Année copyright, réseaux sociaux cliquables, certifications, siège |
+| `LLMIntelCard` | Segment cible, modèle de vente, persona, traction, concurrents, financement |
+| `Footer` | Copyright, stack technique, liens GitHub / LinkedIn |
 
 ```tsx
 // Dans analyzer-app.tsx — composition des cartes

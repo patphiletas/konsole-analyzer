@@ -61,7 +61,8 @@ export async function POST(request: NextRequest) {
       screenshotUrl: buildScreenshotUrl(hostname),
     }))
 
-    const llmEnabled = Boolean(process.env.GROQ_API_KEY || process.env.OPENROUTER_API_KEY)
+    const lazy = validated.lazyLlm ?? process.env.LAZY_LLM === 'true'
+    const llmEnabled = !lazy && Boolean(process.env.GROQ_API_KEY || process.env.OPENROUTER_API_KEY)
     const llmAnalysis = llmEnabled
       ? await analyzeWebsiteWithLLM(
           scraped.html,
@@ -111,6 +112,7 @@ export async function POST(request: NextRequest) {
         analysisSource: llmAnalysis
           ? process.env.GROQ_API_KEY ? 'Groq + heuristiques' : 'LLM + heuristiques'
           : 'Heuristiques',
+        llmAvailable: lazy ? Boolean(process.env.GROQ_API_KEY || process.env.OPENROUTER_API_KEY) : undefined,
         emailProvider: dnsIntel.emailProvider,
         dnsTools: dnsIntel.toolsFromDns,
         footerSignals: scraped.footerSignals,

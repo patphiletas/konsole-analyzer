@@ -37,7 +37,9 @@ Tu entres un domaine (`stripe.com`, `hubspot.com`…). L'app analyse le site san
 - Données économiques issues de Wikidata : nombre de salariés, siège social, place boursière, groupe parent, chiffre d'affaires, bénéfice net — toujours la valeur la plus récente disponible.
 
 ### Analyse par intelligence artificielle (optionnel)
-Activée si une clé API est configurée. L'IA lit le site et en déduit des informations que les patterns textuels ne peuvent pas capturer :
+Activée si une clé API est configurée. L'IA lit le site et en déduit des informations que les patterns textuels ne peuvent pas capturer.
+
+Par défaut, l'appel LLM a lieu pendant l'analyse principale. En **mode lazy** (variable `LAZY_LLM=true` ou bouton "IA lazy" dans le formulaire), l'appel est différé au clic sur l'onglet "Analyse IA" — utile pour économiser le quota journalier Groq (100 000 tokens/jour sur le tier gratuit).
 
 - **À qui s'adresse le produit** : startups, petites entreprises, mid-market ou grands comptes
 - **Comment l'entreprise vend** : autonomie utilisateur (le produit se vend lui-même via un essai) ou vente commerciale (demo, contact sales), ou les deux
@@ -62,7 +64,9 @@ Activée si une clé API est configurée. L'IA lit le site et en déduit des inf
 
 ```
 app/
-  api/analyze/route.ts        Point d'entrée API — orchestre tous les services
+  api/
+    analyze/route.ts          Point d'entrée API — orchestre tous les services (sans LLM en mode lazy)
+    analyze-llm/route.ts      Route IA dédiée — appelée à la demande en mode lazy
   components/
     analyzer-app.tsx          Interface principale (formulaire + composition)
     CompanyCard.tsx            Identité de l'entreprise
@@ -73,6 +77,7 @@ app/
     GtmCard.tsx                Signaux commerciaux détectés
     DnsCard.tsx                Outils et provider email (DNS)
     FooterCard.tsx             Signaux extraits du footer
+    Footer.tsx                 Footer site (stack, copyright, liens)
 lib/
   services/
     scraper.ts                Récupération et extraction du HTML public
@@ -111,7 +116,11 @@ L'application fonctionne sans aucune variable obligatoire.
 ```bash
 # Analyse par IA (optionnel) — une seule clé suffit
 GROQ_API_KEY=gsk_...                          # groq.com — gratuit, Llama 3.3 70B (recommandé)
-OPENROUTER_API_KEY=sk-or-...                  # openrouter.ai — fallback automatique si Groq échoue
+OPENROUTER_API_KEY=sk-or-...                  # openrouter.ai — fallback si Groq échoue
+
+# Mode lazy IA (optionnel) — économise les tokens Groq
+LAZY_LLM=true                                 # l'appel LLM est différé au clic sur l'onglet "Analyse IA"
+                                              # activable aussi depuis l'UI (bouton "IA lazy" dans le formulaire)
 
 # Rate limiting (optionnel) — console.upstash.com, tier gratuit
 UPSTASH_REDIS_REST_URL=https://...            # URL REST de la base Upstash

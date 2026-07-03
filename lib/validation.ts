@@ -11,6 +11,7 @@ export const analyzeRequestSchema = z.object({
     .refine((value) => domainLikePattern.test(value), {
       message: 'Enter a valid website URL, for example stripe.com',
     }),
+  lazyLlm: z.boolean().optional(),
 })
 
 export type AnalyzeRequest = z.infer<typeof analyzeRequestSchema>
@@ -71,6 +72,7 @@ export const analyzeResponseSchema = z.object({
     competitors: z.array(z.string()).optional(),
     fundingSignals: z.array(z.string()).optional(),
   }).optional(),
+  llmAvailable: z.boolean().optional(),
   analyzedAt: z.string().datetime(),
 })
 
