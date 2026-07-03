@@ -27,19 +27,20 @@ Kpratik est un outil d'intelligence commerciale B2B. Il analyse des sites web pu
 
 ## Flux vers des tiers
 
-### LLM — Groq et OpenRouter (risque principal)
+### LLM — Groq (risque principal)
 
-Le HTML brut scrapé (50 KB max) est envoyé à Groq (`llama-3.3-70b-versatile`) ou OpenRouter (modèle gratuit en fallback). Ce HTML peut contenir :
+Le HTML scrapé est envoyé à Groq (`llama-3.3-70b-versatile`). Ce HTML peut contenir :
 - des noms d'employés (pages « À propos », sections équipe)
 - des adresses email visibles
 - des numéros de téléphone
 
-**Risque RGPD :** transfert de données personnelles à un sous-traitant sans scrubbing préalable.
+**Risque RGPD :** transfert de données personnelles à un sous-traitant.
 
-**Action requise :**
-1. Vérifier la disponibilité d'un DPA (Data Processing Agreement) chez Groq et OpenRouter.
-2. Implémenter un scrubbing des emails et numéros de téléphone avant envoi (voir `DOC/securite.md` → mesure S3).
-3. N'envoyer que les champs utiles (title, description, scripts) plutôt que le HTML complet quand possible.
+**Mesures appliquées :**
+1. `scrubHtmlForLlm()` supprime les commentaires HTML, les scripts inline, les emails et numéros de téléphone avant envoi — voir `DOC/securite.md` → S8. ✅
+2. HTML tronqué à 5 000 caractères avant envoi.
+
+**Action restante :** vérifier la disponibilité d'un DPA (Data Processing Agreement) chez Groq.
 
 ### Wikipedia / Wikidata
 
@@ -95,8 +96,8 @@ Vercel collecte des logs de requête (IP, URL, timestamp) selon sa propre politi
 
 | Priorité | Action | Statut |
 |---|---|---|
-| Haute | Scrubbing emails/téléphones avant envoi LLM | À faire |
-| Haute | Vérifier DPA Groq et OpenRouter | À faire |
+| Haute | Scrubbing emails/téléphones avant envoi LLM | ✅ Fait (S8) |
+| Haute | Vérifier DPA Groq | À faire |
 | Moyenne | Supprimer l'URL des analytics internes | À faire |
 | Moyenne | Vérifier rétention des logs Vercel | À faire |
 | Basse | Contrôle `robots.txt` dans le scraper | Backlog |

@@ -7,7 +7,7 @@ Inventaire des risques de sécurité et mesures appliquées ou planifiées.
 ## Architecture de sécurité
 
 Kpratik est une application Next.js déployée sur Vercel. La surface d'attaque est limitée :
-- une seule route API exposée : `POST /api/analyze`
+- deux routes API exposées : `POST /api/analyze` et `POST /api/analyze-llm` (déclenchée à la demande en mode lazy)
 - pas de base de données
 - pas d'authentification utilisateur
 - pas de session côté serveur
@@ -26,7 +26,7 @@ Toute requête entrante passe par `analyzeRequestSchema` (Zod) avant traitement.
 
 ### S3 — Isolation des clés API
 
-Les clés `GROQ_API_KEY` et `OPENROUTER_API_KEY` sont dans les variables d'environnement Vercel, jamais dans le code. Le fichier `.env.local` est dans `.gitignore`.
+Les clés `GROQ_API_KEY`, `OPENROUTER_API_KEY` et le flag `LAZY_LLM` sont dans les variables d'environnement Vercel, jamais dans le code. Les tokens Upstash (`UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`) suivent la même règle. Le fichier `.env.local` est dans `.gitignore`.
 
 ### S4 — Gestion centralisée des erreurs
 
@@ -42,7 +42,7 @@ Le HTML scrapé est traité par regex uniquement (pas de parsing DOM côté serv
 
 ### S6 — Rate limiting (implémenté)
 
-La route `POST /api/analyze` est protégée par un sliding window de **10 requêtes / 60 secondes par IP** via `@upstash/ratelimit` + Redis.
+Les routes `POST /api/analyze` et `POST /api/analyze-llm` sont protégées par un sliding window de **10 requêtes / 60 secondes par IP** via `@upstash/ratelimit` + Redis.
 
 **Variables d'environnement requises :**
 - `UPSTASH_REDIS_REST_URL`

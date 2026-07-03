@@ -24,7 +24,7 @@ Les équipes sales perdent du temps à qualifier manuellement des comptes : visi
 ## Contraintes techniques
 
 - Fonctionnel à coût zéro : aucune API payante requise
-- Enrichissement LLM optionnel (OpenRouter) si une clé est fournie
+- Enrichissement LLM optionnel (Groq) si une clé est fournie
 - Déployable sur Vercel en quelques minutes
 - Résultat en moins de 5 secondes (opérations I/O en parallèle)
 

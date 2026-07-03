@@ -13,7 +13,7 @@ Toutes les erreurs applicatives passent par `AppError` (classe centrale dans `li
 | `INVALID_URL` | 400 | URL soumise non valide (format incorrect) |
 | `FETCH_FAILED` | 502 | Scraping du site impossible (timeout, refus connexion, DNS) |
 | `PARSE_FAILED` | 500 | HTML reçu mais non parseable |
-| `LLM_ERROR` | 502 | Échec de l'appel OpenRouter |
+| `LLM_ERROR` | 502 | Échec de l'appel Groq (ou LLM configuré) |
 | `VALIDATION_ERROR` | 400 | Payload request ou response ne passe pas le schéma Zod |
 | `INTERNAL_ERROR` | 500 | Toute autre exception non anticipée |
 
