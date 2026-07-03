@@ -1,8 +1,30 @@
-# Kpratik
+<div align="center">
+  <img src="public/IMG/kpratik.png" alt="Kpratik" width="90" />
 
-Application web d'intelligence commerciale B2B : analyse le site public d'une entreprise et produit des informations actionnables pour une équipe sales ou marketing — stack technique, signaux commerciaux, données publiques enrichies et score de fit /100.
+  <h1>Kpratik</h1>
 
-Application déployée : https://kpratik.vercel.app/
+  <p><strong>Intelligence commerciale B2B</strong> — qualifiez un compte en moins de 5 secondes depuis son URL.</p>
+
+  <p>
+    <a href="https://kpratik.vercel.app/">🌐 App déployée</a>
+    &nbsp;·&nbsp;
+    <a href="DOC/scoring.md">📊 Scoring</a>
+    &nbsp;·&nbsp;
+    <a href="DOC/features.md">⚡ Features</a>
+    &nbsp;·&nbsp;
+    <a href="DOC/bugs.md">🐛 Bugs</a>
+    &nbsp;·&nbsp;
+    <a href="DOC/roadmap.md">🗺 Roadmap</a>
+  </p>
+
+  <p>
+    <img src="https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs&logoColor=white" alt="Next.js 16" />
+    <img src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/tests-88%20passing-22c55e?logo=vitest&logoColor=white" alt="88 tests" />
+    <img src="https://img.shields.io/badge/LLM-Groq-F55036?logoColor=white" alt="Groq" />
+    <img src="https://img.shields.io/badge/deployed-Vercel-black?logo=vercel&logoColor=white" alt="Vercel" />
+  </p>
+</div>
 
 ---
 
@@ -84,7 +106,7 @@ lib/
     heuristics.ts             Analyse locale — stack, signaux, secteur, taille
     dns.ts                    Lecture des enregistrements DNS via l'API Google
     wiki.ts                   Enrichissement Wikipedia + Wikidata
-    llm.ts                    Analyse IA — Groq en primaire, OpenRouter en fallback
+    llm.ts                    Analyse IA — Groq (Llama 3.3 70B)
     scoring.ts                Calcul du score et génération de l'explication
   types.ts                    Interfaces TypeScript partagées
   utils.ts                    Construction des URLs (favicon, screenshot)
