@@ -169,3 +169,13 @@ Format : symptôme → cause → solution choisie.
 **Cause :** `const hasLists = tractionSignals?.length || competitors?.length || fundingSignals?.length` retourne `0` (pas `false`) quand tous les tableaux sont vides. En React, `{0 && <Component />}` rend le chiffre `"0"` au lieu de ne rien afficher.
 
 **Solution :** Conversion en booléen avec `!!` : `const hasLists = !!(tractionSignals?.length || ...)`.
+
+---
+
+## Bug #17 — Enrichissement Wikipedia absent pour la majorité des sites (régression)
+
+**Symptôme :** Stripe, Linear, HubSpot, Facebook et la plupart des sites ne retournaient plus de données Wikipedia. Seuls quelques cas comme Pennylane fonctionnaient encore.
+
+**Cause :** Le filtre anti-faux-positifs (bug #6) exige que le titre de l'article Wikipedia contienne `companyName`. Quand le nom extrait du titre du site diffère légèrement du nom de l'article Wikipedia (casse, suffixe, rebranding…), le filtre rejette tous les résultats et retourne `found: false`.
+
+**Solution :** Fallback dans `lookupCompanyWiki` — si la recherche par `companyName` échoue, retry avec le nom de domaine sans TLD (`domainRoot = domain.split('.')[0]`), uniquement si différent du companyName. Couvre les cas où le titre extrait du site ne correspond pas exactement au nom Wikipedia.

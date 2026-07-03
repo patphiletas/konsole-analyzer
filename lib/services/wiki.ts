@@ -158,7 +158,15 @@ export async function lookupCompanyWiki(
   const logoUrl = buildFaviconUrl(domain)
   const screenshotUrl = buildScreenshotUrl(domain)
 
-  const title = await searchWikipediaTitle(`${companyName} company`, companyName)
+  let title = await searchWikipediaTitle(`${companyName} company`, companyName)
+
+  if (!title) {
+    const domainRoot = domain.split('.')[0]
+    if (domainRoot.toLowerCase() !== companyName.toLowerCase()) {
+      title = await searchWikipediaTitle(`${domainRoot} company`, domainRoot)
+    }
+  }
+
   if (!title) return { found: false, logoUrl, screenshotUrl }
 
   const [summary, wikidataId] = await Promise.all([
