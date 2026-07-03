@@ -180,6 +180,24 @@ URL de production : https://kpratik.vercel.app/
 
 ---
 
+## Documentation interne
+
+Le dossier `DOC/` contient la documentation de travail du projet — décisions techniques, journal de bord, référentiels. Elle est maintenue au fil du développement et constitue la mémoire du projet : pourquoi tel choix a été fait, quels bugs ont été rencontrés, comment les features fonctionnent sous le capot.
+
+| Fichier | Contenu |
+|---|---|
+| [scoring.md](DOC/scoring.md) | Grille de scoring SaaS B2B — formules, points par critère, niveaux |
+| [features.md](DOC/features.md) | Toutes les fonctionnalités avec extraits de code représentatifs |
+| [bugs.md](DOC/bugs.md) | Journal des bugs — symptôme, cause, solution pour chaque incident |
+| [tests.md](DOC/tests.md) | Couverture des tests Vitest — ce qui est testé et pourquoi |
+| [roadmap.md](DOC/roadmap.md) | Fonctionnalités livrées et pistes d'évolution |
+| [securite.md](DOC/securite.md) | Mesures de sécurité implémentées (SSRF, injection, rate limiting…) |
+| [style.md](DOC/style.md) | Décisions de design UI et conventions visuelles |
+| [rgpd.md](DOC/rgpd.md) | Analyse RGPD — données collectées, durée de conservation |
+| [sujet.md](DOC/sujet.md) | Cahier des charges initial |
+
+---
+
 ## Intégration dans Konsole
 
 Dans un produit comme Konsole, ce module pourrait devenir une brique d'enrichissement compte :
