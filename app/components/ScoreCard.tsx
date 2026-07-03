@@ -100,7 +100,7 @@ export function ScoreCard({
         </div>
       </div>
 
-      <p className="text-xs text-zinc-500">
+      <p className="w-fit rounded-md bg-white/80 px-2 py-1 text-xs text-zinc-500">
         Analyse le{' '}
         {new Date(analyzedAt).toLocaleString('fr-FR', {
           dateStyle: 'medium',

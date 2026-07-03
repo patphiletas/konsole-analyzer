@@ -12,6 +12,7 @@ import { FooterCard } from './FooterCard'
 import { TechStackCard } from './TechStackCard'
 import { ScoreCard } from './ScoreCard'
 import { LLMIntelCard } from './LLMIntelCard'
+import { Footer } from './Footer'
 
 const DEFAULT_EXAMPLES = ['stripe.com', 'hubspot.com', 'linear.app']
 
@@ -54,19 +55,19 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-zinc-50 text-zinc-950">
-      <section className="border-b border-zinc-200 bg-white">
+    <main className="min-h-screen text-zinc-950">
+      <section className="sticky top-0 z-10 border-b border-blue-600 bg-blue-500 shadow-lg">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-8 lg:grid-cols-[1fr_380px] lg:px-8">
           <div className="flex flex-col justify-center">
-            <p className="text-sm font-semibold uppercase tracking-wide text-blue-700">
+            <p className="text-sm font-semibold uppercase tracking-wide text-blue-200">
               Intelligence commerciale B2B
             </p>
-            <h1 className="mt-3 max-w-3xl text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl">
+            <h1 className="mt-3 max-w-3xl text-4xl font-semibold tracking-tight text-white sm:text-5xl">
               Kpratik
             </h1>
-            <p className="mt-4 max-w-2xl text-lg leading-8 text-zinc-600">
+            <p className="mt-4 max-w-2xl text-[1.65rem] leading-8 text-blue-100" style={{ fontFamily: 'var(--font-caveat)' }}>
               Analyse un site web, extrait les signaux utiles pour une équipe
-              sales/marketing, puis score le fit pour une offre vendue aux SaaS B2B.
+              sales/marketing, puis score le fit pour une offre vendue aux SaaS B2B !
             </p>
           </div>
 
@@ -110,7 +111,17 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-5 py-8 lg:px-8">
+      <div className="relative min-h-screen">
+        <div
+          className="absolute inset-0 transition-opacity duration-500"
+          style={{
+            backgroundImage: 'url(/IMG/002-deskLaptop.jpg)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            opacity: result ? 0.3 : 1,
+          }}
+        />
+      <section className="relative mx-auto max-w-6xl px-5 py-8 lg:px-8">
         {error && (
           <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-rose-900">
             <p className="font-medium">Analyse impossible</p>
@@ -162,7 +173,7 @@ export default function Home() {
           ]
 
           return (
-            <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
+            <div className="grid gap-5 lg:grid-cols-[1fr_360px] [&_.rounded-lg]:shadow-lg">
               <div className="min-w-0 space-y-5">
                 <CompanyCard
                   companyName={result.companyName}
@@ -175,7 +186,7 @@ export default function Home() {
                 />
 
                 <div>
-                  <div className="border-b border-zinc-200">
+                  <div className="rounded-t-lg border-b border-zinc-200 bg-white">
                     <nav className="-mb-px flex">
                       {tabs.map((tab) => (
                         <button
@@ -229,6 +240,8 @@ export default function Home() {
           )
         })()}
       </section>
+      </div>
+      <Footer />
     </main>
   )
 }
