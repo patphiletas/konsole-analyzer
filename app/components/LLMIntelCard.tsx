@@ -57,7 +57,7 @@ export function LLMIntelCard({ llmIntel }: { llmIntel: LLMIntel }) {
   const personaLabel = targetPersona ? (PERSONA_LABELS[targetPersona] ?? targetPersona) : null
 
   const hasBadges = segmentInfo || salesInfo || personaLabel
-  const hasLists  = tractionSignals?.length || competitors?.length || fundingSignals?.length
+  const hasLists  = !!(tractionSignals?.length || competitors?.length || fundingSignals?.length)
 
   if (!hasBadges && !hasLists) return null
 
