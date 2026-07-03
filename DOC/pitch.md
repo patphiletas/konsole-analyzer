@@ -80,9 +80,9 @@ Ces signaux viennent compléter l'analyse sans aucun appel externe — tout vien
 
 Quand tu cliques sur "Analyser", trois opérations se lancent en parallèle : le scraping de la page, la résolution DNS du domaine, et la recherche Wikipedia. Ça évite d'enchaîner les appels et le résultat arrive plus vite.
 
-Côté code : Next.js 16 App Router avec une route API serverless, TypeScript partout, Zod pour valider les payloads, Tailwind pour l'UI. 52 tests unitaires Vitest couvrent chaque service indépendamment avec des mocks de fetch — les tests ne font jamais d'appel réseau réel.
+Côté code : Next.js 16 App Router avec une route API serverless, TypeScript partout, Zod pour valider les payloads, Tailwind pour l'UI. 88 tests unitaires Vitest couvrent chaque service indépendamment avec des mocks de fetch — les tests ne font jamais d'appel réseau réel.
 
-Le LLM (OpenRouter) est une couche optionnelle : si une clé est configurée, il enrichit l'analyse ; sinon l'expérience reste complète grâce aux heuristiques locales.
+Le LLM (Groq, Llama 3.3 70B) est une couche optionnelle : si une clé est configurée, il enrichit l'analyse ; sinon l'expérience reste complète grâce aux heuristiques locales.
 
 ---
 

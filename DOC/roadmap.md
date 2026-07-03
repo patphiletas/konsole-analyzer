@@ -5,7 +5,7 @@
 - [x] **Setup projet** — Next.js 16 App Router + TypeScript, Vitest, gestion d'erreurs (`AppError`), middleware API (format réponse unifié), schémas Zod *(setup initial)*
 - [x] **Scraping HTML** — fetch page d'accueil, extraction title, meta, scripts, liens, favicon *(MVP)*
 - [x] **Score de fit SaaS B2B /100** — taille (30pts), secteur (30pts), stack (25pts), GTM (20pts), explication textuelle *(MVP)*
-- [x] **Enrichissement LLM optionnel** — Groq (Llama 3.3 70B) en primaire, OpenRouter `:free` en fallback — activé si clé présente, sinon heuristiques locales *(MVP)*
+- [x] **Enrichissement LLM optionnel** — Groq (Llama 3.3 70B) — activé si clé présente, sinon heuristiques locales *(MVP)*
 - [x] **Intelligence commerciale IA** — segment cible, modèle de vente (PLG/SLG/hybrid), persona, signaux de traction, concurrents mentionnés, financement — carte dédiée dans l'UI *(enrichissement)*
 - [x] **Heuristiques locales** — détection stack (20+ patterns), signaux GTM (10 patterns), secteur, taille estimée — app fonctionnelle à coût zéro *(enrichissement)*
 - [x] **Intelligence DNS** — lookup TXT/MX via Google DoH (sans clé), SPF → 30+ outils détectés (HubSpot, Salesforce, Klaviyo…), MX → provider email *(enrichissement)*
@@ -17,7 +17,9 @@
 - [x] **Signaux footer** — extraction `<footer>` : année de copyright, réseaux sociaux, certifications (SOC 2, ISO 27001…), forme juridique, siège social *(enrichissement)*
 - [x] **UI** — composant `analyzer-app.tsx`, breakdown score, section DNS (violet), stack avec confiance, données publiques *(enrichissement)*
 - [x] **Dossier DOC** — roadmap, sujet, tests, pitch vidéo *(documentation)*
-- [x] **60 tests Vitest** — 8 fichiers couvrant tous les services (errors, validation, middleware, utils, heuristics, scoring, DNS, wiki) *(qualité)*
+- [x] **88 tests Vitest** — 11 fichiers couvrant tous les services (errors, validation, middleware, utils, heuristics, scoring, DNS, wiki, scraper, ratelimit, llm) *(qualité)*
+- [x] **Analyse IA différée (lazy mode)** — bouton IA auto/lazy dans le formulaire, appel Groq déclenché au clic sur l'onglet uniquement, route dédiée `/api/analyze-llm`, variable `LAZY_LLM` *(optimisation)*
+- [x] **Fallback hostname Wikipedia** — si le companyName ne matche pas l'article Wikipedia, retry avec le nom de domaine sans TLD — correction bug #17 *(qualité)*
 - [x] **CI/CD GitHub Actions** — TypeScript + tests à chaque push/PR sur `main` *(qualité)*
 
 ---
