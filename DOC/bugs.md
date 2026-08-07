@@ -189,3 +189,13 @@ Format : symptôme → cause → solution choisie.
 **Cause :** `sticky` appliqué sans breakpoint — sur mobile les colonnes `lg:grid-cols-[1fr_380px]` s'empilent verticalement, rendant le header trop grand pour être fixe.
 
 **Solution :** `sticky` remplacé par `lg:sticky` — le header défile normalement sur mobile et reste fixe uniquement à partir de 1024px.
+
+---
+
+## Bug #19 — CI GitHub Actions en échec : `npm audit` (postcss/sharp/undici via `next`)
+
+**Symptôme :** L'étape "Audit dépendances" du CI (`npm audit --audit-level=high`) échoue avec 4 vulnérabilités `high` (postcss, sharp, undici) — bloque avant même les étapes TypeScript et tests.
+
+**Cause :** `next` était épinglé en dur à `16.2.9` dans `package.json` (pas de `^`/`~`), donc `npm audit fix` ne pouvait pas appliquer le correctif sans `--force` malgré un fix disponible en version mineure (`16.3.0`, non-breaking).
+
+**Solution :** `next` bumpé à `16.3.0` dans `package.json`, puis `npm audit fix` pour la dernière vulnérabilité (`undici`, transitive). `npm audit --audit-level=high` retourne 0 vulnérabilité. Vérifié : `tsc --noEmit`, `npm test` (98 tests) et `npm run build` passent tous après la mise à jour.
