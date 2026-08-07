@@ -50,7 +50,7 @@ function Section({ title, items }: { title: string; items: string[] }) {
 }
 
 export function LLMIntelCard({ llmIntel }: { llmIntel: LLMIntel }) {
-  const { targetSegment, salesModel, targetPersona, tractionSignals, competitors, fundingSignals } = llmIntel
+  const { targetSegment, salesModel, targetPersona, tractionSignals, competitors, fundingSignals, pagesExplored } = llmIntel
 
   const segmentInfo = targetSegment ? (SEGMENT_LABELS[targetSegment] ?? { label: targetSegment, description: '', color: 'bg-zinc-50 text-zinc-700 border-zinc-200' }) : null
   const salesInfo   = salesModel    ? (SALES_MODEL_LABELS[salesModel] ?? { label: salesModel,    description: '', color: 'bg-zinc-50 text-zinc-700 border-zinc-200' }) : null
@@ -65,6 +65,11 @@ export function LLMIntelCard({ llmIntel }: { llmIntel: LLMIntel }) {
     <div className="rounded-lg border border-zinc-200 bg-white p-5">
       <h3 className="text-lg font-semibold text-zinc-950">Analyse IA</h3>
       <p className="mt-1 text-sm text-zinc-500">Déduit par lecture du site — à croiser avec d'autres sources.</p>
+      {!!pagesExplored?.length && (
+        <p className="mt-1 text-xs text-zinc-400">
+          L&apos;agent a exploré {pagesExplored.length > 1 ? 'les pages' : 'la page'} {pagesExplored.join(', ')} en complément de la page d&apos;accueil.
+        </p>
+      )}
 
       {hasBadges && (
         <div className="mt-4 grid gap-2 sm:grid-cols-3">

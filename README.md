@@ -20,7 +20,7 @@
   <p>
     <img src="https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs&logoColor=white" alt="Next.js 16" />
     <img src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
-    <img src="https://img.shields.io/badge/tests-88%20passing-22c55e?logo=vitest&logoColor=white" alt="88 tests" />
+    <img src="https://img.shields.io/badge/tests-98%20passing-22c55e?logo=vitest&logoColor=white" alt="98 tests" />
     <img src="https://img.shields.io/badge/LLM-Groq-F55036?logoColor=white" alt="Groq" />
     <img src="https://img.shields.io/badge/deployed-Vercel-black?logo=vercel&logoColor=white" alt="Vercel" />
   </p>
@@ -58,8 +58,12 @@ Tu entres un domaine (`stripe.com`, `hubspot.com`…). L'app analyse le site san
 - Résumé, fondateur, dirigeant actuel, année de création, lien Wikipedia.
 - Données économiques issues de Wikidata : nombre de salariés, siège social, place boursière, groupe parent, chiffre d'affaires, bénéfice net — toujours la valeur la plus récente disponible.
 
-### Analyse par intelligence artificielle (optionnel)
+### Analyse par intelligence artificielle — agentique (optionnel)
 Activée si une clé API est configurée. L'IA lit le site et en déduit des informations que les patterns textuels ne peuvent pas capturer.
+
+Ce n'est pas un simple aller-retour prompt → JSON : le modèle dispose d'un outil `fetch_page` et **décide lui-même** s'il doit aller lire une autre page du site (`/pricing`, `/about`, `/customers`, `/docs`…) quand la homepage ne suffit pas — par exemple si aucun signal de prix ou de traction n'y apparaît. Plafonné à 2 appels par analyse pour protéger le quota gratuit ; les pages effectivement consultées sont affichées dans l'UI.
+
+Un champ optionnel **"Personnaliser pour mon ICP"** permet de décrire en une phrase son client idéal (max 300 caractères) : le modèle priorise alors les signaux GTM et la description en fonction de cet ICP, sans boucle de conversation ni requête supplémentaire.
 
 Par défaut, l'appel LLM a lieu pendant l'analyse principale. En **mode lazy** (variable `LAZY_LLM=true` ou bouton "IA lazy" dans le formulaire), l'appel est différé au clic sur l'onglet "Analyse IA" — utile pour économiser le quota journalier Groq (100 000 tokens/jour sur le tier gratuit).
 
@@ -78,7 +82,7 @@ Par défaut, l'appel LLM a lieu pendant l'analyse principale. En **mode lazy** (
 - **TypeScript** — typage strict des contrats de données et des services
 - **Tailwind CSS 4** — interface responsive orientée usage commercial
 - **Zod 4** — validation des données échangées avec l'API
-- **Vitest** — 88 tests unitaires couvrant tous les services
+- **Vitest** — 98 tests unitaires couvrant tous les services
 
 ---
 
@@ -102,11 +106,11 @@ app/
     Footer.tsx                 Footer site (stack, copyright, liens)
 lib/
   services/
-    scraper.ts                Récupération et extraction du HTML public
+    scraper.ts                Récupération et extraction du HTML public (+ fetchPageText pour l'agent IA)
     heuristics.ts             Analyse locale — stack, signaux, secteur, taille
     dns.ts                    Lecture des enregistrements DNS via l'API Google
     wiki.ts                   Enrichissement Wikipedia + Wikidata
-    llm.ts                    Analyse IA — Groq (Llama 3.3 70B)
+    llm.ts                    Analyse IA agentique — Groq (Llama 3.3 70B), tool-use fetch_page
     scoring.ts                Calcul du score et génération de l'explication
   types.ts                    Interfaces TypeScript partagées
   utils.ts                    Construction des URLs (favicon, screenshot)
@@ -114,7 +118,7 @@ lib/
   api-middleware.ts           Format de réponse API unifié
   errors.ts                   Gestion des erreurs applicatives
   ratelimit.ts                Rate limiting Upstash (10 req/60s par IP)
-__tests__/                    88 tests Vitest (11 fichiers)
+__tests__/                    98 tests Vitest (11 fichiers)
 .github/workflows/ci.yml      Intégration continue : audit, typage + tests à chaque push
 ```
 
@@ -156,7 +160,7 @@ Sans ces clés, l'application fonctionne entièrement : heuristiques locales + W
 ## Tests et build
 
 ```bash
-npm test        # 88 tests
+npm test        # 98 tests
 npm run build   # build production
 ```
 
@@ -179,7 +183,7 @@ Total plafonné à 100. Niveaux de qualification : **excellent fit** (≥75) / *
 
 ## Limites actuelles
 
-- Analyse uniquement la page d'accueil — pas de navigation sur les sous-pages.
+- Analyse essentiellement la page d'accueil — sans LLM, pas de navigation sur les sous-pages. Avec l'IA activée, l'agent peut lire jusqu'à 2 pages supplémentaires (`/pricing`, `/about`…) s'il le juge utile, mais ce n'est pas un crawl complet du site.
 - Les estimations de taille et de secteur restent approximatives.
 - Pas de cache : chaque analyse refait une requête vers le site.
 - Certaines stacks masquées par du bundling ou un CDN ne sont pas détectables.
@@ -208,6 +212,7 @@ Le dossier `DOC/` contient la documentation de travail du projet — décisions 
 
 | Fichier | Contenu |
 |---|---|
+| [AGENTS.md](AGENTS.md) | Contexte, règles et routage pour tout agent IA travaillant sur ce repo |
 | [scoring.md](DOC/scoring.md) | Grille de scoring SaaS B2B — formules, points par critère, niveaux |
 | [features.md](DOC/features.md) | Toutes les fonctionnalités avec extraits de code représentatifs |
 | [bugs.md](DOC/bugs.md) | Journal des bugs — symptôme, cause, solution pour chaque incident |

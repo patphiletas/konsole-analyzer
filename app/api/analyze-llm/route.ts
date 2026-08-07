@@ -11,6 +11,7 @@ export const maxDuration = 20
 
 const requestSchema = z.object({
   url: z.string().min(1),
+  icp: z.string().trim().max(300).optional(),
 })
 
 export async function POST(request: NextRequest) {
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const { url } = requestSchema.parse(body)
+    const { url, icp } = requestSchema.parse(body)
 
     if (!isValidUrl(url)) {
       throw new AppError(ErrorType.INVALID_URL, 'Invalid URL format', 400)
@@ -49,6 +50,8 @@ export async function POST(request: NextRequest) {
       scraped.title,
       scraped.description,
       scraped.scripts,
+      url,
+      icp,
     )
 
     analytics.track({ type: 'analyze_success', url, duration: Date.now() - startTime })
@@ -62,6 +65,7 @@ export async function POST(request: NextRequest) {
           tractionSignals: llmAnalysis.tractionSignals,
           competitors: llmAnalysis.competitors,
           fundingSignals: llmAnalysis.fundingSignals,
+          pagesExplored: llmAnalysis.pagesExplored,
         },
         analysisSource: process.env.GROQ_API_KEY ? 'Groq + heuristiques' : 'LLM + heuristiques',
       }),

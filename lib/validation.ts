@@ -12,6 +12,7 @@ export const analyzeRequestSchema = z.object({
       message: 'Enter a valid website URL, for example stripe.com',
     }),
   lazyLlm: z.boolean().optional(),
+  icp: z.string().trim().max(300).optional(),
 })
 
 export type AnalyzeRequest = z.infer<typeof analyzeRequestSchema>
@@ -71,6 +72,7 @@ export const analyzeResponseSchema = z.object({
     tractionSignals: z.array(z.string()).optional(),
     competitors: z.array(z.string()).optional(),
     fundingSignals: z.array(z.string()).optional(),
+    pagesExplored: z.array(z.string()).optional(),
   }).optional(),
   llmAvailable: z.boolean().optional(),
   analyzedAt: z.string().datetime(),

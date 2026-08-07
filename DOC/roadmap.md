@@ -17,17 +17,19 @@
 - [x] **Signaux footer** — extraction `<footer>` : année de copyright, réseaux sociaux, certifications (SOC 2, ISO 27001…), forme juridique, siège social *(enrichissement)*
 - [x] **UI** — composant `analyzer-app.tsx`, breakdown score, section DNS (violet), stack avec confiance, données publiques *(enrichissement)*
 - [x] **Dossier DOC** — roadmap, sujet, tests, pitch vidéo *(documentation)*
-- [x] **88 tests Vitest** — 11 fichiers couvrant tous les services (errors, validation, middleware, utils, heuristics, scoring, DNS, wiki, scraper, ratelimit, llm) *(qualité)*
+- [x] **98 tests Vitest** — 11 fichiers couvrant tous les services (errors, validation, middleware, utils, heuristics, scoring, DNS, wiki, scraper, ratelimit, llm) *(qualité)*
 - [x] **Analyse IA différée (lazy mode)** — bouton IA auto/lazy dans le formulaire, appel Groq déclenché au clic sur l'onglet uniquement, route dédiée `/api/analyze-llm`, variable `LAZY_LLM` *(optimisation)*
 - [x] **Fallback hostname Wikipedia** — si le companyName ne matche pas l'article Wikipedia, retry avec le nom de domaine sans TLD — correction bug #17 *(qualité)*
 - [x] **CI/CD GitHub Actions** — TypeScript + tests à chaque push/PR sur `main` *(qualité)*
+- [x] **LLM agentique (tool-use)** — le modèle décide lui-même s'il doit lire `/pricing`, `/about`, `/customers`, `/docs`… via un outil `fetch_page`, plafonné à 2 appels/analyse, protégé SSRF (S15) — remplace l'ancien crawl codé en dur envisagé ci-dessous ; `pagesExplored` affiché dans l'UI — retour Youno *(IA)*
+- [x] **AGENTS.md / CLAUDE.md réels** — contexte projet, règles, table de routage vers `DOC/` — retour Youno *(documentation)*
+- [x] **Personnalisation ICP en un seul échange** — champ optionnel repliable dans le formulaire, injecté dans le prompt LLM pour prioriser les signaux GTM pertinents, sans boucle de chat (option secondaire retour Youno) *(IA)*
 
 ---
 
 ## À faire
 
 ### Court terme
-- [ ] Crawl contrôlé sur pages clés : `/pricing`, `/about`, `/customers`, `/docs`
 - [ ] Cache par domaine avec revalidation (éviter de re-scraper à chaque démo)
 - [ ] Analyse `robots.txt` et `sitemap.xml` (signal taille et structure)
 - [ ] Score configurable selon l'ICP de l'utilisateur

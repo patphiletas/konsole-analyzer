@@ -26,6 +26,8 @@ export default function Home() {
   const [llmLoading, setLlmLoading] = useState(false)
   const [llmError, setLlmError] = useState<string | null>(null)
   const [lazyMode, setLazyMode] = useState(false)
+  const [icp, setIcp] = useState('')
+  const [showIcp, setShowIcp] = useState(false)
 
   useEffect(() => {
     setLazyMode(localStorage.getItem('kpratik_lazy_llm') === '1')
@@ -47,7 +49,7 @@ export default function Home() {
       const res = await fetch('/api/analyze-llm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: result.url }),
+        body: JSON.stringify({ url: result.url, ...(icp.trim() && { icp: icp.trim() }) }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error?.message || 'Analyse IA échouée')
@@ -70,7 +72,11 @@ export default function Home() {
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url, ...(lazyMode && { lazyLlm: true }) }),
+        body: JSON.stringify({
+          url,
+          ...(lazyMode && { lazyLlm: true }),
+          ...(icp.trim() && { icp: icp.trim() }),
+        }),
       })
 
       const data = await response.json()
@@ -157,6 +163,25 @@ export default function Home() {
                 </button>
               ))}
             </div>
+
+            <button
+              type="button"
+              onClick={() => setShowIcp((v) => !v)}
+              className="mt-3 text-xs font-medium text-zinc-500 underline decoration-dotted hover:text-zinc-800"
+            >
+              {showIcp ? 'Masquer la personnalisation ICP' : 'Personnaliser pour mon ICP (optionnel)'}
+            </button>
+            {showIcp && (
+              <textarea
+                value={icp}
+                onChange={(e) => setIcp(e.target.value)}
+                maxLength={300}
+                rows={2}
+                placeholder="Ex: je vends du CRM à des agences marketing de 10-50 personnes"
+                className="mt-2 w-full rounded-md border border-zinc-300 bg-white p-2 text-sm text-zinc-950 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                disabled={loading}
+              />
+            )}
           </form>
         </div>
       </section>

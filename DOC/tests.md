@@ -1,6 +1,6 @@
 # Tests — Kpratik
 
-88 tests Vitest répartis sur 11 fichiers. À mettre à jour à chaque nouvelle feature.
+98 tests Vitest répartis sur 11 fichiers. À mettre à jour à chaque nouvelle feature.
 
 > **Note** : les composants React (`analyzer-app.tsx`, cards) ne sont pas couverts par des tests unitaires — le projet n'a pas React Testing Library configuré. Les changements UI sont validés manuellement dans le navigateur.
 
@@ -124,7 +124,7 @@ Commande : `npm test`
 
 ---
 
-## `__tests__/services/scraper.test.ts` — Sécurité scraper S7 + S14 (15 tests)
+## `__tests__/services/scraper.test.ts` — Sécurité scraper S7 + S14 + S15 (21 tests)
 
 | Test | Ce qu'il vérifie |
 |---|---|
@@ -143,10 +143,16 @@ Commande : `npm test`
 | S7 : bloque `::1` IPv6 | `scrapeWebsite('http://[::1]/')` → `INVALID_URL` |
 | S14 : contenu sous la limite | Réponse < 500 KB retournée intacte |
 | S14 : body > 500 KB tronqué | `result.html.length ≤ 500 000` même si le body fait 600 KB |
+| S15 : rejette un chemin sans `/` initial | `fetchPageText(base, 'pricing')` → `null` |
+| S15 : rejette un chemin avec `..` | `fetchPageText(base, '/../secret')` → `null` |
+| S15 : rejette un chemin protocol-relative cross-host | `//evil.example.com/x` → `null` (hostname ≠ base) |
+| S15 : réutilise le garde-fou SSRF S7 | Base sur IP privée → `null` |
+| S15 : texte nettoyé pour un chemin valide | Tags/scripts stripés, `{ path, text }` retourné |
+| S15 : page cible en erreur | Réponse 404 → `null` sans exception |
 
 ---
 
-## `__tests__/services/llm.test.ts` — Scrubbing HTML S8 (6 tests)
+## `__tests__/services/llm.test.ts` — Scrubbing HTML S8 + boucle agentique S15 + ICP (10 tests)
 
 | Test | Ce qu'il vérifie |
 |---|---|
@@ -156,6 +162,10 @@ Commande : `npm test`
 | Rédaction des numéros de téléphone | `+33 1 23 45 67 89` → `[phone]` |
 | Troncature à 5 000 caractères | Input 10 000 chars → sortie ≤ 5 000 chars |
 | Préservation du texte marketing | `"The best CRM for sales teams"` conservé |
+| Réponse directe sans tool-use | Homepage suffisante → `fetchPageText` jamais appelée |
+| Un appel `fetch_page` puis JSON final | `pagesExplored` contient le chemin fetché |
+| Plafond à 2 appels d'outil | 2 appels max même si le modèle en redemande un 3e |
+| Contexte ICP inclus dans le prompt | Texte ICP retrouvé dans le message envoyé à Groq |
 
 ---
 

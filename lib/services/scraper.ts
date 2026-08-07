@@ -286,3 +286,60 @@ export async function scrapeWebsite(url: string): Promise<ScrapedData> {
     )
   }
 }
+
+const MAX_PAGE_TEXT = 3000
+
+// S15 — utilisé par l'agent LLM (fetch_page) : ne fetche jamais un autre hostname que baseUrl,
+// même si le modèle fournit un chemin absolu ou hallucine une URL externe.
+export async function fetchPageText(
+  baseUrl: string,
+  path: string,
+): Promise<{ path: string; text: string } | null> {
+  if (typeof path !== 'string' || !path.startsWith('/') || path.includes('..')) {
+    return null
+  }
+
+  let target: URL
+  try {
+    target = new URL(path, baseUrl)
+  } catch {
+    return null
+  }
+
+  if (target.hostname !== new URL(baseUrl).hostname) {
+    return null
+  }
+
+  try {
+    await assertPublicUrl(target.href)
+
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 10000)
+
+    const response = await fetch(target.href, {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      },
+      signal: controller.signal,
+    })
+
+    clearTimeout(timeout)
+
+    if (!response.ok) return null
+
+    const html = await readBodyWithLimit(response)
+    const text = html
+      .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
+      .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
+      .replace(/<!--[\s\S]*?-->/g, ' ')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .substring(0, MAX_PAGE_TEXT)
+
+    return { path, text }
+  } catch {
+    return null
+  }
+}

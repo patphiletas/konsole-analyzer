@@ -74,13 +74,21 @@ Ces signaux viennent compléter l'analyse sans aucun appel externe — tout vien
 
 ---
 
+## Fonctionnalité 8 — LLM agentique (tool-use)
+
+> *À utiliser quand on montre l'onglet "Analyse IA" et la mention "pages explorées"*
+
+L'enrichissement IA n'est plus un simple aller-retour "prompt → JSON". Le modèle a accès à un outil `fetch_page` : s'il juge que la homepage ne contient pas assez de signal — pas de page pricing visible, pas de traction mentionnée — il décide lui-même d'aller lire `/pricing`, `/about`, `/customers` ou `/docs` avant de répondre. C'est plafonné à 2 appels par analyse pour rester raisonnable sur le quota gratuit, et chaque chemin réellement consulté est affiché sous les résultats ("l'agent a exploré /pricing"). Toute la sécurité déjà en place (anti-SSRF, redaction PII) s'applique aussi aux pages que l'agent va chercher lui-même.
+
+---
+
 ## Architecture — ce qui tourne sous le capot
 
 > *À utiliser pour la partie technique de la vidéo*
 
 Quand tu cliques sur "Analyser", trois opérations se lancent en parallèle : le scraping de la page, la résolution DNS du domaine, et la recherche Wikipedia. Ça évite d'enchaîner les appels et le résultat arrive plus vite.
 
-Côté code : Next.js 16 App Router avec une route API serverless, TypeScript partout, Zod pour valider les payloads, Tailwind pour l'UI. 88 tests unitaires Vitest couvrent chaque service indépendamment avec des mocks de fetch — les tests ne font jamais d'appel réseau réel.
+Côté code : Next.js 16 App Router avec une route API serverless, TypeScript partout, Zod pour valider les payloads, Tailwind pour l'UI. 98 tests unitaires Vitest couvrent chaque service indépendamment avec des mocks de fetch — les tests ne font jamais d'appel réseau réel.
 
 Le LLM (Groq, Llama 3.3 70B) est une couche optionnelle : si une clé est configurée, il enrichit l'analyse ; sinon l'expérience reste complète grâce aux heuristiques locales.
 

@@ -1,5 +1,10 @@
-import { describe, it, expect } from 'vitest'
-import { scrubHtmlForLlm } from '@/lib/services/llm'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { scrubHtmlForLlm, analyzeWebsiteWithLLM } from '@/lib/services/llm'
+import { fetchPageText } from '@/lib/services/scraper'
+
+vi.mock('@/lib/services/scraper', () => ({
+  fetchPageText: vi.fn(),
+}))
 
 describe('scrubHtmlForLlm — S8 PII et surface d\'attaque', () => {
   it('supprime les commentaires HTML', () => {
@@ -34,5 +39,97 @@ describe('scrubHtmlForLlm — S8 PII et surface d\'attaque', () => {
   it('préserve le texte marketing sans PII', () => {
     const result = scrubHtmlForLlm('<h1>The best CRM for sales teams</h1>')
     expect(result).toContain('The best CRM for sales teams')
+  })
+})
+
+// ─── S15 — boucle agentique (tool-use fetch_page) ─────────────────────────────
+
+function groqMessage(body: object): Response {
+  return new Response(JSON.stringify({ choices: [{ message: body }] }), { status: 200 })
+}
+
+const FINAL_JSON = {
+  companyName: 'Acme',
+  industry: 'SaaS',
+  estimatedSize: 'startup',
+  techStack: ['React'],
+  gtmSignals: ['Pricing page'],
+  description: 'Acme sells widgets.',
+}
+
+describe('analyzeWebsiteWithLLM — agent loop', () => {
+  beforeEach(() => {
+    process.env.GROQ_API_KEY = 'test-key'
+    vi.mocked(fetchPageText).mockReset()
+  })
+
+  afterEach(() => {
+    delete process.env.GROQ_API_KEY
+    vi.restoreAllMocks()
+  })
+
+  it("répond directement sans appeler fetch_page quand la homepage suffit", async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(
+      groqMessage({ role: 'assistant', content: JSON.stringify(FINAL_JSON) }),
+    ))
+
+    const result = await analyzeWebsiteWithLLM('<html></html>', 'Acme', 'desc', [], 'https://acme.com')
+
+    expect(fetchPageText).not.toHaveBeenCalled()
+    expect(result.companyName).toBe('Acme')
+    expect(result.pagesExplored).toBeUndefined()
+  })
+
+  it('appelle fetch_page puis produit le JSON final avec pagesExplored', async () => {
+    vi.mocked(fetchPageText).mockResolvedValueOnce({ path: '/pricing', text: 'Plans start at $99/mo' })
+
+    vi.stubGlobal('fetch', vi.fn()
+      .mockResolvedValueOnce(groqMessage({
+        role: 'assistant',
+        content: null,
+        tool_calls: [{ id: 'call_1', type: 'function', function: { name: 'fetch_page', arguments: JSON.stringify({ path: '/pricing' }) } }],
+      }))
+      .mockResolvedValueOnce(groqMessage({ role: 'assistant', content: JSON.stringify(FINAL_JSON) })),
+    )
+
+    const result = await analyzeWebsiteWithLLM('<html></html>', 'Acme', 'desc', [], 'https://acme.com')
+
+    expect(fetchPageText).toHaveBeenCalledWith('https://acme.com', '/pricing')
+    expect(result.pagesExplored).toEqual(['/pricing'])
+  })
+
+  it("plafonne à 2 appels d'outil même si le modèle en redemande", async () => {
+    vi.mocked(fetchPageText)
+      .mockResolvedValueOnce({ path: '/pricing', text: 'a' })
+      .mockResolvedValueOnce({ path: '/about', text: 'b' })
+
+    const toolCall = (id: string, path: string) => groqMessage({
+      role: 'assistant',
+      content: null,
+      tool_calls: [{ id, type: 'function', function: { name: 'fetch_page', arguments: JSON.stringify({ path }) } }],
+    })
+
+    vi.stubGlobal('fetch', vi.fn()
+      .mockResolvedValueOnce(toolCall('call_1', '/pricing'))
+      .mockResolvedValueOnce(toolCall('call_2', '/about'))
+      .mockResolvedValueOnce(groqMessage({ role: 'assistant', content: JSON.stringify(FINAL_JSON) })),
+    )
+
+    const result = await analyzeWebsiteWithLLM('<html></html>', 'Acme', 'desc', [], 'https://acme.com')
+
+    expect(fetchPageText).toHaveBeenCalledTimes(2)
+    expect(result.pagesExplored).toEqual(['/pricing', '/about'])
+  })
+
+  it("inclut le contexte ICP dans le prompt envoyé au LLM quand fourni", async () => {
+    const mockFetch = vi.fn().mockResolvedValueOnce(
+      groqMessage({ role: 'assistant', content: JSON.stringify(FINAL_JSON) }),
+    )
+    vi.stubGlobal('fetch', mockFetch)
+
+    await analyzeWebsiteWithLLM('<html></html>', 'Acme', 'desc', [], 'https://acme.com', 'je vends du CRM à des agences')
+
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body)
+    expect(body.messages[0].content).toContain('je vends du CRM à des agences')
   })
 })

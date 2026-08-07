@@ -69,6 +69,8 @@ export async function POST(request: NextRequest) {
           scraped.title,
           scraped.description,
           scraped.scripts,
+          url,
+          validated.icp,
         ).catch((error) => {
           analytics.track({
             type: 'analyze_error',
@@ -123,6 +125,7 @@ export async function POST(request: NextRequest) {
           tractionSignals: llmAnalysis.tractionSignals,
           competitors: llmAnalysis.competitors,
           fundingSignals: llmAnalysis.fundingSignals,
+          pagesExplored: llmAnalysis.pagesExplored,
         } : undefined,
         enrichment: {
           found: wikiIntel.found,

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { scrapeWebsite, isPrivateIp } from '@/lib/services/scraper'
+import { scrapeWebsite, isPrivateIp, fetchPageText } from '@/lib/services/scraper'
 
 const HTML_MINIMAL = '<html><head><title>Example</title></head><body>ok</body></html>'
 
@@ -67,5 +67,48 @@ describe('S14 — Body borné à 500 KB', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(makeResponse(bigHtml)))
     const result = await scrapeWebsite('https://93.184.216.34')
     expect(result.html.length).toBeLessThanOrEqual(500_000)
+  })
+})
+
+// ─── S15 — fetchPageText : outil fetch_page exposé au LLM ─────────────────────
+
+describe('fetchPageText', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('rejette un chemin qui ne commence pas par /', async () => {
+    const result = await fetchPageText('https://93.184.216.34', 'pricing')
+    expect(result).toBeNull()
+  })
+
+  it('rejette un chemin contenant ..', async () => {
+    const result = await fetchPageText('https://93.184.216.34', '/../secret')
+    expect(result).toBeNull()
+  })
+
+  it('rejette un chemin protocol-relative pointant vers un autre hostname', async () => {
+    const result = await fetchPageText('https://93.184.216.34', '//evil.example.com/x')
+    expect(result).toBeNull()
+  })
+
+  it('bloque une adresse privée réutilisant le garde-fou SSRF (S7)', async () => {
+    const result = await fetchPageText('http://10.0.0.5', '/pricing')
+    expect(result).toBeNull()
+  })
+
+  it('retourne le texte nettoyé (tags supprimés) pour un chemin valide', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(
+      makeResponse('<html><body><script>evil()</script><h1>Pricing</h1><p>$99/mo</p></body></html>'),
+    ))
+    const result = await fetchPageText('https://93.184.216.34', '/pricing')
+    expect(result).toEqual({ path: '/pricing', text: 'Pricing $99/mo' })
+    expect(result?.text).not.toContain('evil()')
+  })
+
+  it('retourne null si la page cible répond en erreur', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('', { status: 404 })))
+    const result = await fetchPageText('https://93.184.216.34', '/pricing')
+    expect(result).toBeNull()
   })
 })

@@ -202,6 +202,18 @@ while (true) {
 const html = new TextDecoder().decode(Buffer.concat(chunks))
 ```
 
+### S15 — LLM agentique : surface de fetch dirigée par le modèle (implémenté)
+
+`analyzeWebsiteWithLLM` expose au LLM un outil `fetch_page(path)` : le modèle peut désormais choisir lui-même d'aller lire une autre page du site (`/pricing`, `/about`…) avant de répondre. C'est une nouvelle surface d'attaque — le modèle (ou un site malveillant qui l'influence via S12) pourrait tenter de faire fetcher une URL arbitraire.
+
+**Mesures appliquées (`fetchPageText`, `lib/services/scraper.ts`) :**
+- Le `path` doit commencer par `/` et ne pas contenir `..` — rejeté sinon.
+- Le chemin est résolu avec `new URL(path, baseUrl)`, puis le `hostname` résultant est comparé à celui de `baseUrl` : tout chemin protocol-relative (`//evil.com/x`) ou absolu qui pointerait vers un autre domaine est rejeté, même si le modèle hallucine une URL externe.
+- Le chemin résolu repasse par `assertPublicUrl` (S7) — même blocage des IP privées et des adresses de metadata cloud.
+- Le texte récupéré est nettoyé (tags/scripts stripés) et passé par `redactPii` (S8) avant d'être renvoyé au modèle.
+- Le nombre d'appels est plafonné à **2 par analyse** (`MAX_TOOL_CALLS`) — limite l'impact d'un modèle qui boucle et protège le quota Groq gratuit (cf. bug #15).
+- Toute erreur (page indisponible, JSON d'arguments malformé) retourne `null` sans jamais faire planter la boucle d'analyse.
+
 ---
 
 ## Résumé des actions
@@ -217,6 +229,7 @@ const html = new TextDecoder().decode(Buffer.concat(chunks))
 | Moyenne | S9 — Headers HTTP | `next.config.ts` — section `headers` | ✅ Fait |
 | Moyenne | S10 — Pas de CSP | CSP dans `next.config.ts` | ✅ Fait |
 | Basse | S11 — Audit dépendances | `npm audit` dans CI | ✅ Fait |
+| Haute | S15 — Fetch dirigé par le LLM | Même hostname + `assertPublicUrl` + cap 2 appels + scrubbing | ✅ Fait |
 
 ---
 

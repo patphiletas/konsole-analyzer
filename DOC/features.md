@@ -301,15 +301,40 @@ function scoreLevel(score: number): string {
 
 ---
 
-## 9. Enrichissement LLM (optionnel)
+## 9. Enrichissement LLM agentique (optionnel)
 
 **Ce que ça fait :** Si `GROQ_API_KEY` est présente, envoie le HTML scrapé à Groq (Llama 3.3 70B) pour enrichir la détection et extraire des signaux commerciaux impossibles à obtenir par regex. L'app fonctionne sans aucune clé (heuristiques locales).
 
-**Nouveaux champs extraits par le LLM :** segment cible, modèle de vente (PLG/SLG/hybrid), persona, signaux de traction quantifiés, concurrents mentionnés, signaux de financement.
+Ce n'est plus un simple aller-retour prompt → JSON : le modèle a accès à un outil `fetch_page(path)` et décide **lui-même** s'il a besoin d'aller lire une autre page du site (`/pricing`, `/about`, `/customers`, `/docs`…) quand la homepage ne suffit pas — par exemple si aucun signal de prix ou de traction n'y apparaît. Remplace le crawl codé en dur envisagé dans le roadmap par une décision de l'agent, bornée à 2 appels par analyse pour protéger le quota Groq gratuit.
+
+**Nouveaux champs extraits par le LLM :** segment cible, modèle de vente (PLG/SLG/hybrid), persona, signaux de traction quantifiés, concurrents mentionnés, signaux de financement, et `pagesExplored` (chemins effectivement fetchés par l'agent, affichés dans l'UI).
+
+**Personnalisation ICP (optionnelle) :** un champ repliable dans le formulaire ("Personnaliser pour mon ICP") permet de décrire en une phrase son ICP (max 300 car.). S'il est renseigné, il est injecté dans le prompt entre délimiteurs explicites (même logique anti-injection que le contenu scrapé, S12) pour que le modèle priorise les `gtmSignals` et la description pertinents pour cet ICP — sans boucle de chat ni nouvelle route, un simple paramètre optionnel de plus dans l'appel existant.
 
 **Mode lazy :** par défaut, l'appel LLM a lieu pendant l'analyse principale (`POST /api/analyze`). En mode lazy (`LAZY_LLM=true` ou bouton "IA lazy" dans le formulaire), il est différé à un second appel `POST /api/analyze-llm`, déclenché uniquement au clic sur l'onglet "Analyse IA". Permet d'économiser le quota journalier Groq (100 000 tokens/jour sur le tier gratuit).
 
-**Fichiers :** `lib/services/llm.ts` · `app/api/analyze/route.ts` · `app/api/analyze-llm/route.ts`
+**Fichiers :** `lib/services/llm.ts` · `lib/services/scraper.ts` (`fetchPageText`) · `app/api/analyze/route.ts` · `app/api/analyze-llm/route.ts`
+
+```typescript
+// Dans llm.ts — boucle agent : le modèle peut appeler fetch_page avant de répondre
+for (let iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
+  const allowTools = toolCallCount < MAX_TOOL_CALLS
+  const message = await callLLM(messages, allowTools ? [FETCH_PAGE_TOOL] : undefined)
+
+  if (allowTools && message.tool_calls?.length) {
+    messages.push(message)
+    for (const call of message.tool_calls) {
+      const { path } = JSON.parse(call.function.arguments)
+      const page = await fetchPageText(baseUrl, path)   // S15 — même hostname, SSRF-safe
+      if (page) pagesExplored.push(page.path)
+      messages.push({ role: 'tool', tool_call_id: call.id, content: page ? redactPii(page.text) : `Page ${path} indisponible.` })
+    }
+    continue
+  }
+  finalContent = message.content ?? ''
+  break
+}
+```
 
 ```typescript
 // Dans analyze/route.ts — saut du LLM en mode lazy
@@ -318,8 +343,8 @@ const llmEnabled = !lazy && Boolean(process.env.GROQ_API_KEY || process.env.OPEN
 
 // analyze-llm/route.ts — appelé au clic sur l'onglet, retourne uniquement llmIntel
 const scraped = await scrapeWebsite(url)
-const llmAnalysis = await analyzeWebsiteWithLLM(scraped.html, scraped.title, scraped.description, scraped.scripts)
-return toJsonResponse(createSuccessResponse({ llmIntel: { ... }, analysisSource: '...' }), 200)
+const llmAnalysis = await analyzeWebsiteWithLLM(scraped.html, scraped.title, scraped.description, scraped.scripts, url)
+return toJsonResponse(createSuccessResponse({ llmIntel: { ..., pagesExplored: llmAnalysis.pagesExplored }, analysisSource: '...' }), 200)
 ```
 
 ---
