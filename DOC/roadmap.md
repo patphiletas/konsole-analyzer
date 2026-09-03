@@ -39,6 +39,9 @@
 - [ ] Export CRM (webhook HubSpot/Salesforce)
 - [ ] Mode "evidence" : extraits exacts justifiant chaque signal détecté
 - [ ] GitHub API : détecter langages, activité, nombre de repos publics
+- [ ] **Profil utilisateur avec historique de recherches (sauvegarde + export)** — noté par Patrice le 2026-09-03, à traiter plus tard. Implique une rupture avec les règles actuelles « pas de base de données, pas d'authentification » (`AGENTS.md`) : compte utilisateur + persistance des analyses passées + surface RGPD nouvelle (l'historique contient des données sur les entreprises/personnes analysées, pas seulement sur l'utilisateur — impact à documenter dans `DOC/rgpd.md`).
+  - **Piste retenue pour un premier palier (moins engageant) :** export local sans compte — dernières recherches gardées côté navigateur (`localStorage`), téléchargeables en JSON/CSV. Pas d'auth, pas de backend à opérer, pas de nouvelle surface RGPD (rien ne quitte le poste de l'utilisateur).
+  - **Palier suivant, si besoin validé :** vrai profil utilisateur avec compte + persistance serveur (auth à définir : magic link / OAuth ; DB managée type Neon/Supabase pour rester zéro-coût).
 
 ### Long terme / intégration Konsole
 - [ ] Brique d'enrichissement compte au moment de l'import dans une liste cible
