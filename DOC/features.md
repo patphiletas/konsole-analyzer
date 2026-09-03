@@ -311,7 +311,7 @@ Ce n'est plus un simple aller-retour prompt → JSON : le modèle a accès à un
 
 **Personnalisation ICP (optionnelle) :** un champ repliable dans le formulaire ("Personnaliser pour mon ICP") permet de décrire en une phrase son ICP (max 300 car.). S'il est renseigné, il est injecté dans le prompt entre délimiteurs explicites (même logique anti-injection que le contenu scrapé, S12) pour que le modèle priorise les `gtmSignals` et la description pertinents pour cet ICP — sans boucle de chat ni nouvelle route, un simple paramètre optionnel de plus dans l'appel existant.
 
-**Mode lazy :** par défaut, l'appel LLM a lieu pendant l'analyse principale (`POST /api/analyze`). En mode lazy (`LAZY_LLM=true` ou bouton "IA lazy" dans le formulaire), il est différé à un second appel `POST /api/analyze-llm`, déclenché uniquement au clic sur l'onglet "Analyse IA". Permet d'économiser le quota journalier Groq (100 000 tokens/jour sur le tier gratuit).
+**Mode lazy :** par défaut, l'appel LLM a lieu pendant l'analyse principale (`POST /api/analyze`). En mode lazy (`LAZY_LLM=true` ou bouton "IA lazy" dans le formulaire), il est différé à un second appel `POST /api/analyze-llm`, déclenché uniquement au clic sur l'onglet "Analyse IA". Permet d'économiser le quota Groq gratuit (`openai/gpt-oss-120b` : 8 000 tokens/minute, 200 000 tokens/jour — le plafond par minute est atteint bien avant le quota journalier, cf. bug #20 et `reasoning_effort: 'low'` dans `llm.ts`).
 
 **Fichiers :** `lib/services/llm.ts` · `lib/services/scraper.ts` (`fetchPageText`) · `app/api/analyze/route.ts` · `app/api/analyze-llm/route.ts`
 

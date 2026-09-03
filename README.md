@@ -65,7 +65,7 @@ Ce n'est pas un simple aller-retour prompt → JSON : le modèle dispose d'un ou
 
 Un champ optionnel **"Personnaliser pour mon ICP"** permet de décrire en une phrase son client idéal (max 300 caractères) : le modèle priorise alors les signaux GTM et la description en fonction de cet ICP, sans boucle de conversation ni requête supplémentaire.
 
-Par défaut, l'appel LLM a lieu pendant l'analyse principale. En **mode lazy** (variable `LAZY_LLM=true` ou bouton "IA lazy" dans le formulaire), l'appel est différé au clic sur l'onglet "Analyse IA" — utile pour économiser le quota journalier Groq (100 000 tokens/jour sur le tier gratuit).
+Par défaut, l'appel LLM a lieu pendant l'analyse principale. En **mode lazy** (variable `LAZY_LLM=true` ou bouton "IA lazy" dans le formulaire), l'appel est différé au clic sur l'onglet "Analyse IA" — utile pour économiser le quota Groq gratuit (`openai/gpt-oss-120b` : 8 000 tokens/minute, 200 000 tokens/jour).
 
 - **À qui s'adresse le produit** : startups, petites entreprises, mid-market ou grands comptes
 - **Comment l'entreprise vend** : autonomie utilisateur (le produit se vend lui-même via un essai) ou vente commerciale (demo, contact sales), ou les deux
