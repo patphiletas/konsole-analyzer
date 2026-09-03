@@ -144,6 +144,9 @@ async function callGroq(messages: ChatMessage[], tools?: object[]): Promise<Chat
       messages,
       temperature: 0.3,
       max_tokens: 1000,
+      // gpt-oss-120b consomme énormément de tokens de raisonnement par défaut (medium) —
+      // le tier gratuit Groq plafonne ce modèle à 8000 TPM, 'low' réduit la marge d'erreur
+      reasoning_effort: 'low',
       ...(tools ? { tools, tool_choice: 'auto' } : {}),
     }),
     signal: AbortSignal.timeout(15000),
