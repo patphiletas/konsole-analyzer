@@ -213,3 +213,15 @@ Format : symptôme → cause → solution choisie.
 **Complément — `rate_limit_exceeded` rencontré juste après ce fix :** `openai/gpt-oss-120b` est un modèle « reasoning » qui génère par défaut (`reasoning_effort: medium`) beaucoup de tokens de chaîne de pensée invisibles avant sa réponse, en plus du JSON final. Le tier gratuit Groq plafonne ce modèle à **8 000 TPM / 200 000 TPD** (identique pour `gpt-oss-20b`, donc pas d'intérêt à changer de variante) — le TPM (par minute) est la limite qui frappe en premier, bien avant le quota journalier.
 
 **Solution complémentaire :** `reasoning_effort: 'low'` ajouté à l'appel Groq (`callGroq()`, `lib/services/llm.ts`). Vérifié par appel réel : `reasoning_tokens` divisé par ~2 sur un prompt trivial (24 → 11), et l'analyse complète sur le site en échec dans le screenshot (tt-geometres-experts.fr) repasse sans `rate_limit_exceeded`. Qualité d'extraction JSON inchangée sur les cas testés — la tâche (extraction structurée, pas de raisonnement complexe) ne nécessite pas un effort de raisonnement élevé.
+
+---
+
+## Bug #21 — CI GitHub Actions en échec (again) : `npm audit` (nanoid)
+
+**Symptôme :** Notification GitHub "CI: All jobs have failed" — l'étape "Audit dépendances" échoue à nouveau, quelques commits après la correction du bug #19.
+
+**Cause :** Nouvelle CVE publiée entre-temps sur `nanoid <3.3.18` (générateurs personnalisés qui peuvent boucler indéfiniment avec `size: 0`), remontée via `postcss` → `@tailwindcss/postcss`. Rien à voir avec les vulnérabilités du bug #19 (déjà corrigées) — confirme que ce type de panne CI peut réapparaître à tout moment, indépendamment des changements de code (une simple divulgation de CVE en amont suffit).
+
+**Solution :** `npm audit fix` (pas de `--force` nécessaire, fix direct sur `nanoid` en transitif via `postcss`). `npm audit --audit-level=high` → 0 vulnérabilité. Seul `package-lock.json` change (aucune dépendance directe touchée). Vérifié : `tsc --noEmit` et `npm test` (98 tests) passent après la mise à jour.
+
+**Point de vigilance :** deux échecs CI sur `npm audit` en l'espace de quelques commits (#19, #21) — si ça se reproduit souvent, envisager un `Dependabot`/`npm audit` programmé plutôt que de découvrir la panne au push.
