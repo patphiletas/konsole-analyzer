@@ -199,3 +199,15 @@ Format : symptôme → cause → solution choisie.
 **Cause :** `next` était épinglé en dur à `16.2.9` dans `package.json` (pas de `^`/`~`), donc `npm audit fix` ne pouvait pas appliquer le correctif sans `--force` malgré un fix disponible en version mineure (`16.3.0`, non-breaking).
 
 **Solution :** `next` bumpé à `16.3.0` dans `package.json`, puis `npm audit fix` pour la dernière vulnérabilité (`undici`, transitive). `npm audit --audit-level=high` retourne 0 vulnérabilité. Vérifié : `tsc --noEmit`, `npm test` (98 tests) et `npm run build` passent tous après la mise à jour.
+
+---
+
+## Bug #20 — Analyse IA en échec : `model_not_found` (llama-3.3-70b-versatile)
+
+**Symptôme :** L'onglet "Analyse IA" affichait `Groq error: {"error":{"message":"The model \`llama-3.3-70b-versatile\` does not exist or you do not have access to it.","code":"model_not_found"}}` sur toute analyse.
+
+**Cause :** Groq a déprécié `llama-3.3-70b-versatile` (annonce du 17/06/2026, tiers gratuit/développeur) — le modèle codé en dur dans `callGroq()` (`lib/services/llm.ts`) n'existe plus côté API.
+
+**Solution :** Migration vers `openai/gpt-oss-120b`, le remplacement recommandé par Groq — supporte le tool-use et les sorties structurées, nécessaires à la boucle agentique (S15). Vérifié par appels réels à l'API Groq : réponse simple OK, déclenchement d'un `tool_call` OK, round-trip complet (tool result → réponse finale) OK — y compris avec le champ `reasoning` que le modèle ajoute aux messages assistant (accepté sans erreur au tour suivant). Toutes les mentions doc du modèle mises à jour (README, `DOC/rgpd.md`, `DOC/roadmap.md`, `DOC/features.md`, `DOC/pitch.md`).
+
+**Point de vigilance :** `openai/gpt-oss-120b` semble avoir un plafond TPM plus bas que l'ancien modèle sur le tier gratuit (`rate_limit_exceeded` rencontré pendant les tests de vérification, à 8 000 TPM) — à surveiller si le mode agentique (tool-use) fait grimper la consommation de tokens plus vite que prévu.

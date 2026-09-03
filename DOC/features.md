@@ -303,7 +303,7 @@ function scoreLevel(score: number): string {
 
 ## 9. Enrichissement LLM agentique (optionnel)
 
-**Ce que ça fait :** Si `GROQ_API_KEY` est présente, envoie le HTML scrapé à Groq (Llama 3.3 70B) pour enrichir la détection et extraire des signaux commerciaux impossibles à obtenir par regex. L'app fonctionne sans aucune clé (heuristiques locales).
+**Ce que ça fait :** Si `GROQ_API_KEY` est présente, envoie le HTML scrapé à Groq (`openai/gpt-oss-120b`) pour enrichir la détection et extraire des signaux commerciaux impossibles à obtenir par regex. L'app fonctionne sans aucune clé (heuristiques locales).
 
 Ce n'est plus un simple aller-retour prompt → JSON : le modèle a accès à un outil `fetch_page(path)` et décide **lui-même** s'il a besoin d'aller lire une autre page du site (`/pricing`, `/about`, `/customers`, `/docs`…) quand la homepage ne suffit pas — par exemple si aucun signal de prix ou de traction n'y apparaît. Remplace le crawl codé en dur envisagé dans le roadmap par une décision de l'agent, bornée à 2 appels par analyse pour protéger le quota Groq gratuit.
 

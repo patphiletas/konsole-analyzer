@@ -29,7 +29,7 @@ Kpratik est un outil d'intelligence commerciale B2B. Il analyse des sites web pu
 
 ### LLM — Groq (risque principal)
 
-Le HTML scrapé est envoyé à Groq (`llama-3.3-70b-versatile`). Ce HTML peut contenir :
+Le HTML scrapé est envoyé à Groq (`openai/gpt-oss-120b`). Ce HTML peut contenir :
 - des noms d'employés (pages « À propos », sections équipe)
 - des adresses email visibles
 - des numéros de téléphone

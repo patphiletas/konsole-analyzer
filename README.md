@@ -110,7 +110,7 @@ lib/
     heuristics.ts             Analyse locale — stack, signaux, secteur, taille
     dns.ts                    Lecture des enregistrements DNS via l'API Google
     wiki.ts                   Enrichissement Wikipedia + Wikidata
-    llm.ts                    Analyse IA agentique — Groq (Llama 3.3 70B), tool-use fetch_page
+    llm.ts                    Analyse IA agentique — Groq (openai/gpt-oss-120b), tool-use fetch_page
     scoring.ts                Calcul du score et génération de l'explication
   types.ts                    Interfaces TypeScript partagées
   utils.ts                    Construction des URLs (favicon, screenshot)
@@ -141,7 +141,7 @@ L'application fonctionne sans aucune variable obligatoire.
 
 ```bash
 # Analyse par IA (optionnel) — une seule clé suffit
-GROQ_API_KEY=gsk_...                          # groq.com — gratuit, Llama 3.3 70B (recommandé)
+GROQ_API_KEY=gsk_...                          # groq.com — gratuit, openai/gpt-oss-120b (recommandé)
 OPENROUTER_API_KEY=sk-or-...                  # openrouter.ai — fallback si Groq échoue
 
 # Mode lazy IA (optionnel) — économise les tokens Groq

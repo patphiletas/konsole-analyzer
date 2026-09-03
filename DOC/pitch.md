@@ -90,7 +90,7 @@ Quand tu cliques sur "Analyser", trois opérations se lancent en parallèle : le
 
 Côté code : Next.js 16 App Router avec une route API serverless, TypeScript partout, Zod pour valider les payloads, Tailwind pour l'UI. 98 tests unitaires Vitest couvrent chaque service indépendamment avec des mocks de fetch — les tests ne font jamais d'appel réseau réel.
 
-Le LLM (Groq, Llama 3.3 70B) est une couche optionnelle : si une clé est configurée, il enrichit l'analyse ; sinon l'expérience reste complète grâce aux heuristiques locales.
+Le LLM (Groq, `openai/gpt-oss-120b`) est une couche optionnelle : si une clé est configurée, il enrichit l'analyse ; sinon l'expérience reste complète grâce aux heuristiques locales.
 
 ---
 
